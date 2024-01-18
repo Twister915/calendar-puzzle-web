@@ -22,12 +22,10 @@ impl BoardMask {
         Self(u64::MAX >> (64 - (PUZZLE_WIDTH * PUZZLE_HEIGHT)))
     }
 
-    #[inline(always)]
     pub fn is_covered(&self, x: usize, y: usize) -> bool {
         self.0 & Self::mask(x, y) != 0
     }
 
-    #[inline(always)]
     pub fn set_covered(&mut self, x: usize, y: usize, value: bool) {
         let mask = Self::mask(x, y);
         if value {
@@ -37,22 +35,18 @@ impl BoardMask {
         }
     }
 
-    #[inline(always)]
     fn mask(x: usize, y: usize) -> u64 {
         1u64 << ((y * PUZZLE_WIDTH) + x) as u64
     }
 
-    #[inline(always)]
     pub fn conflicts_with(&self, other: Self) -> bool {
         self.0 & other.0 != 0
     }
 
-    #[inline(always)]
     pub fn covers_winning_mask(&self, winning_mask: Self) -> bool {
         self.0 & !winning_mask.0 != 0
     }
 
-    #[inline(always)]
     pub fn apply(&mut self, other: Self) {
         self.0 |= other.0;
     }

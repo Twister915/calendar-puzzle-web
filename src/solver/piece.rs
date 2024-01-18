@@ -132,7 +132,6 @@ impl<const W: usize, const H: usize> Piece<W, H> {
         Self { masks }
     }
 
-    #[inline(always)]
     pub fn mask(&self, placement: &Placement) -> Option<BoardMask> {
         placement.code().and_then(|code| self.masks[code])
     }
@@ -174,7 +173,6 @@ impl<const W: usize, const H: usize> Piece<W, H> {
         mask
     }
 
-    #[inline(always)]
     pub fn size(&self, rotation: u8) -> (usize, usize) {
         let is_odd_rotation = rotation % 2 == 1;
         if is_odd_rotation {
@@ -240,7 +238,6 @@ impl<const W: usize, const H: usize> RotatedMask<W, H> {
     }
 }
 
-#[inline(always)]
 pub fn mask_for_piece(piece_idx: usize, placement: &Placement) -> Option<BoardMask> {
     match piece_idx {
         0 => PIECE_0.mask(placement),
@@ -256,7 +253,6 @@ pub fn mask_for_piece(piece_idx: usize, placement: &Placement) -> Option<BoardMa
     }
 }
 
-#[inline(always)]
 pub fn size_for_piece(piece_idx: usize, rotation: u8) -> Option<(usize, usize)> {
     Some(match piece_idx {
         0 => PIECE_0.size(rotation),
