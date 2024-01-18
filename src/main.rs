@@ -1,4 +1,5 @@
 mod solver;
+mod macros;
 
 use solver::*;
 use rayon::prelude::*;

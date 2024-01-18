@@ -11,9 +11,8 @@ pub struct Solution {
 }
 
 pub fn solve(target: &TargetDate) -> Option<Solution> {
-    let winning_mask = target.winning_mask()?;
     let mut stats = SolverStats { steps: 0, start_at: Instant::now() };
-    solve_step(GameState::default(), winning_mask, &mut stats)
+    solve_step(GameState::default(), target.winning_mask()?, &mut stats)
 }
 
 struct SolverStats {
@@ -23,8 +22,7 @@ struct SolverStats {
 
 fn solve_step(state: GameState, winning_mask: BoardMask, stats: &mut SolverStats) -> Option<Solution> {
     stats.steps += 1;
-    let mask = state.mask();
-    if mask == winning_mask {
+    if state.mask() == winning_mask {
         return Some(Solution {
             mask: state.tagged_mask(winning_mask),
             steps: stats.steps,
@@ -32,17 +30,19 @@ fn solve_step(state: GameState, winning_mask: BoardMask, stats: &mut SolverStats
         });
     }
 
+    // pick a position to cover
     let (x, y) = state.open_positions(winning_mask).next()?;
 
-    for piece_idx in state.available_piece_idxes() {
-        for placement in Placement::iter_covering_coordinates(x, y, piece_idx) {
-            let mut next_state = state;
-            if next_state.place_piece(piece_idx, Some(placement), winning_mask) {
-                match solve_step(next_state, winning_mask, stats) {
-                    s @ Some(_) => return s,
-                    None => {}
-                }
-            }
+    // all piece placement pairs that cover the position x, y
+    let piece_placements = state.available_piece_idxes()
+        .flat_map(move |piece_idx| Placement::iter_covering_coordinates(x, y, piece_idx)
+            .map(move |placement| (piece_idx, placement)));
+
+    // attempt to place the pieces on the board, if possible recurse
+    for (piece_idx, placement) in piece_placements {
+        let mut next_state = state;
+        if next_state.place_piece(piece_idx, Some(placement), winning_mask) {
+            crate::return_matching!(solve_step(next_state, winning_mask, stats), Some(_))
         }
     }
 
