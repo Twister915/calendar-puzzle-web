@@ -7,89 +7,46 @@ use std::time::{Duration, Instant};
 pub struct Solution {
     pub mask: TaggedMask,
     pub steps: usize,
-    pub boards: usize,
     pub duration: Duration,
 }
 
-#[derive(Copy, Clone, PartialEq, Eq)]
-pub enum SolverDecision {
-    Solved(Solution),
-    Impossible,
-    Tired,
-}
-
-impl fmt::Display for SolverDecision {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            SolverDecision::Impossible => f.write_str("Impossible"),
-            SolverDecision::Tired => f.write_str("Tired..."),
-            SolverDecision::Solved(solution) => {
-                let secs = solution.duration.as_secs_f64();
-                let boards_per_sec = solution.boards as f64 / secs;
-                writeln!(f, "Solved in {} steps ({} boards evaluated in {:.02} sec... {:.02}/sec)",
-                         solution.steps, solution.boards, secs, boards_per_sec)?;
-                solution.mask.fmt(f)
-            }
-        }
-    }
-}
-
-pub fn solve(target: &TargetDate) -> SolverDecision {
-    let winning_mask = if let Some(mask) = target.winning_mask() {
-        mask
-    } else {
-        return SolverDecision::Impossible;
-    };
-
-    let mut stats = SolverStats { boards: 0, steps: 0, start_at: Instant::now() };
-    loop {
-        let state = GameState::default();
-        stats.steps = 0;
-        match solve_step(state, winning_mask, &mut stats) {
-            s @ SolverDecision::Solved(_) | s @ SolverDecision::Impossible => return s,
-            SolverDecision::Tired => {}
-        }
-    }
+pub fn solve(target: &TargetDate) -> Option<Solution> {
+    let winning_mask = target.winning_mask()?;
+    let mut stats = SolverStats { steps: 0, start_at: Instant::now() };
+    solve_step(GameState::default(), winning_mask, &mut stats)
 }
 
 struct SolverStats {
     steps: usize,
-    boards: usize,
     start_at: Instant,
 }
 
-fn solve_step(state: GameState, winning_mask: BoardMask, stats: &mut SolverStats) -> SolverDecision {
+fn solve_step(state: GameState, winning_mask: BoardMask, stats: &mut SolverStats) -> Option<Solution> {
     stats.steps += 1;
-    stats.boards += 1;
     let mask = state.mask();
     if mask == winning_mask {
-        return SolverDecision::Solved(Solution {
+        return Some(Solution {
             mask: state.tagged_mask(winning_mask),
-            boards: stats.boards,
             steps: stats.steps,
             duration: Instant::now() - stats.start_at
         });
     }
 
-    if stats.steps == 50 {
-        return SolverDecision::Tired;
-    }
+    let (x, y) = state.open_positions(winning_mask).next()?;
 
-    for piece_idx in state.random_available_piece_idxes() {
-        for placement in Placement::random_iter(piece_idx) {
+    for piece_idx in state.available_piece_idxes() {
+        for placement in Placement::iter_covering_coordinates(x, y, piece_idx) {
             let mut next_state = state;
             if next_state.place_piece(piece_idx, Some(placement), winning_mask) {
-                if next_state.contains_no_islands(winning_mask) {
-                    match solve_step(next_state, winning_mask, stats) {
-                        s @ SolverDecision::Solved(_) | s @ SolverDecision::Tired => return s,
-                        SolverDecision::Impossible => {}
-                    }
+                match solve_step(next_state, winning_mask, stats) {
+                    s @ Some(_) => return s,
+                    None => {}
                 }
             }
         }
     }
 
-    SolverDecision::Impossible
+    None
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]

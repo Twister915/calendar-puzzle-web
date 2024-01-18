@@ -22,5 +22,5 @@ mod solve;
 mod piece;
 mod mask;
 
-pub use solve::{TargetDate, Weekday, Month, solve, SolverDecision, Solution, TargetDateIter};
+pub use solve::{TargetDate, Weekday, Month, solve, Solution, TargetDateIter};
 pub use mask::{TaggedMask, CellTag};
