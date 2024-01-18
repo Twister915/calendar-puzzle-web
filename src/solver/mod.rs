@@ -6,7 +6,7 @@ mod prelude {
     pub const NUM_PIECES: usize = 9;
 
     use std::ops::Range;
-    pub use super::{state::*, solve::*, piece::*, mask::*};
+    pub use super::{state::*, solve::*, piece::*, mask::*, board::*, target::*};
 
     pub fn iter_coordinates() -> impl Iterator<Item=(usize, usize)> {
         iter_coordinate_range(0..PUZZLE_WIDTH, 0..PUZZLE_HEIGHT)
@@ -21,6 +21,9 @@ mod state;
 mod solve;
 mod piece;
 mod mask;
+mod target;
+mod board;
 
-pub use solve::{TargetDate, Weekday, Month, solve, Solution, TargetDateIter};
+pub use board::{Weekday, Month};
+pub use target::{TargetDate, solve, Solution, TargetDateIter};
 pub use mask::{TaggedMask, CellTag};
