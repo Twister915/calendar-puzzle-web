@@ -253,15 +253,12 @@ impl<const N: usize> Iterator for RandomSeqIter<N> {
 
 impl<const N: usize> RandomSeqIter<N> {
     fn available(&self) -> impl Iterator<Item=usize> + '_ {
-        self.chosen.iter().enumerate().filter_map(|(idx, chosen)| if !chosen {
-            Some(idx)
-        } else {
-            None
-        })
+        self.chosen.iter().enumerate().filter_map(|(idx, chosen)|
+            if !chosen { Some(idx) } else { None })
     }
 
     pub fn mark_chosen(&mut self, idx: usize) {
-        if N > idx {
+        if idx < N {
             self.chosen[idx] = true;
         }
     }
