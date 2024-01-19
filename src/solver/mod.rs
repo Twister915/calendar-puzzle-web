@@ -25,5 +25,6 @@ mod target;
 mod board;
 
 pub use board::{Weekday, Month};
-pub use target::{TargetDate, solve, Solution, TargetDateIter};
+pub use target::{TargetDate, TargetDateIter};
 pub use mask::{TaggedMask, CellTag};
+pub use solve::{Solution, SolverMsg, solve, SolverItrExt};

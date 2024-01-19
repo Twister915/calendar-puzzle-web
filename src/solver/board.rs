@@ -16,6 +16,40 @@ pub enum Month {
     December,
 }
 
+#[derive(Copy, Clone, PartialEq, PartialOrd, Ord, Eq, Hash, Debug)]
+pub enum Weekday {
+    Monday,
+    Tuesday,
+    Wednesday,
+    Thursday,
+    Friday,
+    Saturday,
+    Sunday,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
+pub enum BoardLabel {
+    MonthLabel(Month),
+    DayLabel(i8),
+    DayOfWeekLabel(Weekday),
+    Unlabeled,
+}
+
+pub const BOARD_LABELS: [[BoardLabel; PUZZLE_WIDTH]; PUZZLE_HEIGHT] = {
+    use {Month as M, Weekday as WD, BoardLabel::{MonthLabel as ML, DayLabel as DL, DayOfWeekLabel as WL, Unlabeled}};
+    [
+        [ML(M::January), ML(M::February), ML(M::March), ML(M::April), ML(M::May), ML(M::June)],
+        [ML(M::July), ML(M::August), ML(M::September), ML(M::October), ML(M::November), ML(M::December)],
+        [DL(1), DL(2), DL(3), DL(4), DL(5), DL(6)],
+        [DL(7), DL(8), DL(9), DL(10), DL(11), DL(12)],
+        [DL(13), DL(14), DL(15), DL(16), DL(17), DL(18)],
+        [DL(19), DL(20), DL(21), DL(22), DL(23), DL(24)],
+        [DL(25), DL(26), DL(27), DL(28), DL(29), DL(30)],
+        [DL(31), Unlabeled, Unlabeled, WL(WD::Monday), WL(WD::Tuesday), WL(WD::Wednesday)],
+        [Unlabeled, Unlabeled, WL(WD::Thursday), WL(WD::Friday), WL(WD::Saturday), WL(WD::Sunday)]
+    ]
+};
+
 impl Month {
     pub fn next(&self) -> Option<Month> {
         use Month as M;
@@ -63,17 +97,6 @@ impl Month {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, PartialOrd, Ord, Eq, Hash, Debug)]
-pub enum Weekday {
-    Monday,
-    Tuesday,
-    Wednesday,
-    Thursday,
-    Friday,
-    Saturday,
-    Sunday,
-}
-
 impl Weekday {
     pub fn next(&self) -> Weekday {
         use Weekday as WD;
@@ -88,26 +111,3 @@ impl Weekday {
         }
     }
 }
-
-#[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
-pub enum BoardLabel {
-    MonthLabel(Month),
-    DayLabel(i8),
-    DayOfWeekLabel(Weekday),
-    Unlabeled,
-}
-
-pub const BOARD_LABELS: [[BoardLabel; PUZZLE_WIDTH]; PUZZLE_HEIGHT] = {
-    use {Month as M, Weekday as WD, BoardLabel::{MonthLabel as ML, DayLabel as DL, DayOfWeekLabel as WL, Unlabeled}};
-    [
-        [ML(M::January), ML(M::February), ML(M::March), ML(M::April), ML(M::May), ML(M::June)],
-        [ML(M::July), ML(M::August), ML(M::September), ML(M::October), ML(M::November), ML(M::December)],
-        [DL(1), DL(2), DL(3), DL(4), DL(5), DL(6)],
-        [DL(7), DL(8), DL(9), DL(10), DL(11), DL(12)],
-        [DL(13), DL(14), DL(15), DL(16), DL(17), DL(18)],
-        [DL(19), DL(20), DL(21), DL(22), DL(23), DL(24)],
-        [DL(25), DL(26), DL(27), DL(28), DL(29), DL(30)],
-        [DL(31), Unlabeled, Unlabeled, WL(WD::Monday), WL(WD::Tuesday), WL(WD::Wednesday)],
-        [Unlabeled, Unlabeled, WL(WD::Thursday), WL(WD::Friday), WL(WD::Saturday), WL(WD::Sunday)]
-    ]
-};

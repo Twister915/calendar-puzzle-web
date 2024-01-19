@@ -153,8 +153,8 @@ impl GameState {
             .map(|(x, y)| (x as u8, y as u8))
     }
 
-    pub fn available_piece_idxes(&self) -> impl Iterator<Item=usize> + '_ {
-        (0..NUM_PIECES).filter_map(|idx|
+    pub fn available_piece_idxes(self) -> impl Iterator<Item=usize> {
+        (0..NUM_PIECES).filter_map(move |idx|
             if self.pieces[idx].is_none() { Some(idx) } else { None })
     }
 }
