@@ -69,6 +69,10 @@ pub struct GameState {
 }
 
 impl GameState {
+    pub fn pieces(&self) -> [Option<Placement>; NUM_PIECES] {
+        self.pieces
+    }
+
     pub fn place_piece(&mut self, piece_idx: usize, placement: Option<Placement>, winning_mask: BoardMask) -> bool {
         if piece_idx >= NUM_PIECES {
             return false;

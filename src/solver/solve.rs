@@ -23,9 +23,9 @@ impl Solver {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub enum SolverMsg {
-    Unsolved(TaggedMask),
+    Unsolved(GameState, TaggedMask),
     Solved(Solution)
 }
 
@@ -35,7 +35,7 @@ impl fmt::Display for SolverMsg {
         match self {
             SolverMsg::Solved(solution) =>
                 write!(f, "SOVLED in {:.02}s with {} steps\n{}\n", solution.duration.as_secs_f64(), solution.steps, solution.mask),
-            SolverMsg::Unsolved(partial) => write!(f, "UNSOLVED\n{}\n", partial),
+            SolverMsg::Unsolved(_, tagged_mask) => write!(f, "UNSOLVED\n{}\n", tagged_mask),
         }
     }
 }
@@ -69,6 +69,7 @@ impl Iterator for Solver {
         if next_state.mask() == self.winning_mask {
             self.frames.take();
             return Some(SolverMsg::Solved(Solution {
+                game: next_state,
                 mask: next_state.tagged_mask(self.winning_mask),
                 steps: self.stats.steps,
                 duration: Instant::now() - self.stats.start_at,
@@ -77,7 +78,7 @@ impl Iterator for Solver {
 
         frames.push(SolveFrame::create(next_state, self.winning_mask));
         self.stats.steps += 1;
-        return Some(SolverMsg::Unsolved(next_state.tagged_mask(self.winning_mask)))
+        return Some(SolverMsg::Unsolved(next_state, next_state.tagged_mask(self.winning_mask)))
     }
 }
 
@@ -100,9 +101,10 @@ impl SolveFrame {
     }
 }
 
-#[derive(Copy, Clone, PartialEq, Eq, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct Solution {
     pub mask: TaggedMask,
+    pub game: GameState,
     pub steps: usize,
     pub duration: Duration,
 }
