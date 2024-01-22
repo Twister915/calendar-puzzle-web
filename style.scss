@@ -117,9 +117,14 @@ body, html {
   margin: 1.5em;
 
   .status {
-    margin-bottom: .65em;
-    font-size: 16pt;
-    color: desaturate($colorAccent, 65%);
+    font-size: 20pt;
+    color: desaturate($colorAccent, 45%);
+  }
+
+  .tip {
+    font-size: 14pt;
+    color: desaturate($colorAccent, 90%);
+    margin-bottom: 2em;
   }
 
   .board {
@@ -139,6 +144,18 @@ body, html {
         border-top: 1px solid black;
         &:last-child {
           border-right: 1px solid black;
+        }
+
+        &.focus-light {
+          .contents.covering {
+            background-color: $colorHighlight;
+          }
+        }
+
+        &.focus-dim {
+          .contents.covering {
+            background-color: gray;
+          }
         }
 
         &, .contents {

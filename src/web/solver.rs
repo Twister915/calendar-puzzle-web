@@ -15,11 +15,13 @@ pub enum SolverCmpMsg {
     Reset,
     ChangeSpeed(i32),
     TickSolver,
+    FocusPiece(Option<usize>),
 }
 
 pub struct SolverCmp {
     target: Option<TargetDate>,
     solver: Option<SolverState>,
+    focus_piece: Option<usize>,
     speed: i32,
 }
 
@@ -45,6 +47,7 @@ impl Component for SolverCmp {
             target: ctx.props().target,
             solver: None,
             speed: 35,
+            focus_piece: None,
         }
     }
 
@@ -100,6 +103,11 @@ impl Component for SolverCmp {
                     false
                 }
             }
+
+            SolverCmpMsg::FocusPiece(focus) => {
+                self.focus_piece = focus;
+                true
+            }
         }
     }
 
@@ -133,7 +141,10 @@ impl Component for SolverCmp {
                         }
                     }
                 </div>
-                {self.view_board()}
+                <div class="tip">
+                    {"tip: hover over any square to see what piece is covering it"}
+                </div>
+                {self.view_board(ctx)}
             </div>
         }
     }
@@ -159,22 +170,27 @@ impl SolverCmp {
         self.solver.take().is_some()
     }
 
-    fn view_board(&self) -> Html {
+    fn view_board(&self, ctx: &Context<Self>) -> Html {
         let tagged_mask = self.tagged_mask();
         html! {
             <div class="board">
                 {(0..PUZZLE_HEIGHT).map(move |y| html! {
                     <div class="row">
                         {(0..PUZZLE_WIDTH).map(move |x| html! {
-                            <div class={classes!(
-                                "cell",
-                                match BOARD_LABELS[y][x] {
-                                    BoardLabel::MonthLabel(_) => "lbl-month",
-                                    BoardLabel::DayLabel(_) => "lbl-day",
-                                    BoardLabel::DayOfWeekLabel(_) => "lbl-weekday",
-                                    BoardLabel::Unlabeled => "lbl-blank",
-                                }
-                            )}>
+                            <div
+                                class={classes!(
+                                    "cell",
+                                    match BOARD_LABELS[y][x] {
+                                        BoardLabel::MonthLabel(_) => "lbl-month",
+                                        BoardLabel::DayLabel(_) => "lbl-day",
+                                        BoardLabel::DayOfWeekLabel(_) => "lbl-weekday",
+                                        BoardLabel::Unlabeled => "lbl-blank",
+                                    },
+                                    tagged_mask.zip(self.focus_piece).and_then(|(tm, focus_piece_idx)| if tm.get(x, y) == CellTag::Covered(focus_piece_idx as u8) { Some("focus-light" )} else { Some("focus-dim") })
+                                )}
+                                onmouseenter={ctx.link().callback(move |_| SolverCmpMsg::FocusPiece(tagged_mask.and_then(|tm| if let CellTag::Covered(piece_idx) = tm.get(x, y) { Some(piece_idx as usize) } else { None })))}
+                                onmouseout={ctx.link().callback(|_| SolverCmpMsg::FocusPiece(None))}
+                            >
                                 {
                                     if let Some(tagged_mask) = tagged_mask {
                                         match tagged_mask.get(x, y) {
