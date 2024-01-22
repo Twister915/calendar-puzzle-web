@@ -26,13 +26,14 @@ pub struct SolverCmp {
 struct SolvingState {
     frames: Box<dyn Iterator<Item=SolverMsg>>,
     last_frame: TaggedMask,
+    steps: usize,
     _ticker: Ticker,
 }
 
 enum SolverState {
     Solving(SolvingState),
     Solved(Solution),
-    Impossible
+    Impossible(usize)
 }
 
 impl Component for SolverCmp {
@@ -43,7 +44,7 @@ impl Component for SolverCmp {
         Self {
             target: ctx.props().target,
             solver: None,
-            speed: 1,
+            speed: 75,
         }
     }
 
@@ -75,13 +76,14 @@ impl Component for SolverCmp {
                                 match state.frames.next() {
                                     Some(SolverMsg::Unsolved(_, last_frame)) => {
                                         state.last_frame = last_frame;
+                                        state.steps += 1;
                                     },
                                     Some(SolverMsg::Solved(solution)) => {
                                         *solver = SolverState::Solved(solution);
                                         return true;
                                     },
                                     Some(SolverMsg::Impossible) => {
-                                        *solver = SolverState::Impossible;
+                                        *solver = SolverState::Impossible(state.steps + 1);
                                         return true;
                                     },
                                     None => panic!("impossible state???")
@@ -90,7 +92,7 @@ impl Component for SolverCmp {
 
                             true
                         },
-                        SolverState::Impossible | SolverState::Solved(_) => {
+                        SolverState::Impossible(_) | SolverState::Solved(_) => {
                             false
                         }
                     }
@@ -107,6 +109,8 @@ impl Component for SolverCmp {
             self.target = new_target;
             if let Some(target) = self.target {
                 self.init_solver(target, ctx.link());
+            } else {
+                self.take_solver();
             }
 
             true
@@ -118,6 +122,17 @@ impl Component for SolverCmp {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <div class="solver">
+                <div class="status">
+                    {"Status: "}
+                    {
+                        match self.solver.as_ref() {
+                            Some(SolverState::Solving(state)) => format!("solving... on step {}", state.steps),
+                            Some(SolverState::Solved(solution)) => format!("solved in {} steps", solution.steps),
+                            Some(SolverState::Impossible(steps)) => format!("impossible, determined in {} steps", steps),
+                            None => "select target date".to_string(),
+                        }
+                    }
+                </div>
                 {self.view_board()}
             </div>
         }
@@ -133,8 +148,9 @@ impl SolverCmp {
                 frames,
                 last_frame,
                 _ticker: Ticker::create(100, link.callback(|_| SolverCmpMsg::TickSolver)),
+                steps: 0,
             }),
-            Some(SolverMsg::Impossible) => SolverState::Impossible,
+            Some(SolverMsg::Impossible) => SolverState::Impossible(0),
             v => panic!("unsupported initial state {:?}", v)
         });
     }

@@ -8,6 +8,15 @@ body, html {
   padding: 0;
   background-color: $colorBackground;
   color: $colorAccent;
+
+  font-family: "proxima-nova", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.title {
+  margin-left: 0.25em;
+  font-size: 32pt;
 }
 
 .target-picker {
@@ -104,47 +113,56 @@ body, html {
   }
 }
 
-.board {
-  $cellSize: 3.2em;
+.solver {
   margin: 1.5em;
-  .row {
-    display: flex;
-    &:last-child {
-      .cell {
-        border-bottom: 1px solid black;
-      }
-    }
 
-    .cell {
-      text-align: center;
-      user-select: none;
-      border-left: 1px solid black;
-      border-top: 1px solid black;
+  .status {
+    margin-bottom: .65em;
+    font-size: 16pt;
+    color: desaturate($colorAccent, 65%);
+  }
+
+  .board {
+    $cellSize: 3.2em;
+    .row {
+      display: flex;
       &:last-child {
-        border-right: 1px solid black;
-      }
-
-      &, .contents {
-        width: $cellSize;
-        height: $cellSize;
-      }
-
-      .contents {
-        position: absolute;
-        &.covering {
-          background-color: transparentize($colorHighlight, .4);
-        }
-
-        &.winning-space {
-          background-color: transparentize(green, .4);
+        .cell {
+          border-bottom: 1px solid black;
         }
       }
 
-      .lbl {
-        margin-top: auto;
-        margin-bottom: auto;
-        padding: 0.3em;
-        width: 100%;
+      .cell {
+        text-align: center;
+        user-select: none;
+        border-left: 1px solid black;
+        border-top: 1px solid black;
+        &:last-child {
+          border-right: 1px solid black;
+        }
+
+        &, .contents {
+          width: $cellSize;
+          height: $cellSize;
+        }
+
+        .contents {
+          position: absolute;
+          &.covering {
+            background-color: transparentize($colorHighlight, .4);
+          }
+
+          &.winning-space {
+            background-color: transparentize(green, .4);
+          }
+        }
+
+        .lbl {
+          margin-top: auto;
+          margin-bottom: auto;
+          padding: 0.3em;
+          width: 100%;
+        }
       }
     }
   }

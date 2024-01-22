@@ -37,6 +37,7 @@ impl Component for App {
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <div class="app">
+                <h1 class="title">{"Joey's Calendar Puzzle Solver"}</h1>
                 <Picker on_picked={ctx.link().callback(AppMsg::TargetPicked)} />
                 <SolverCmp target={self.target} />
             </div>
