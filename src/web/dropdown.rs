@@ -58,7 +58,7 @@ where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _: &Context<Self>, msg: Self::Message) -> bool {
         log::debug!("got {:?}", msg);
         match msg {
             DropdownMsg::InputChange(new_input) => {
@@ -144,10 +144,6 @@ where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static
 }
 
 impl<P> Dropdown<P> where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static {
-    fn has_selection(&self) -> bool {
-        self.picked().is_some()
-    }
-
     fn view_input(&self, link: &Scope<Self>) -> Html {
         let onkeyup = link.callback(|e: web_sys::KeyboardEvent| {
             let input: web_sys::HtmlInputElement = e.target_unchecked_into();

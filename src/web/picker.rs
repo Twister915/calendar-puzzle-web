@@ -25,7 +25,7 @@ impl Component for Picker {
     type Message = PickerMsg;
     type Properties = PickerProps;
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_: &Context<Self>) -> Self {
         Self {
             leap_year: true,
             day: None,

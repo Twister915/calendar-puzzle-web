@@ -16,13 +16,13 @@ impl Component for App {
     type Message = AppMsg;
     type Properties = ();
 
-    fn create(ctx: &Context<Self>) -> Self {
+    fn create(_: &Context<Self>) -> Self {
         Self {
             target: None
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _: &Context<Self>, msg: Self::Message) -> bool {
         log::debug!("got {:?}", msg);
         match msg {
             AppMsg::TargetPicked(target) => {

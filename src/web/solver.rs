@@ -11,7 +11,6 @@ pub struct SolverProps {
 
 #[derive(Debug, PartialEq)]
 pub enum SolverCmpMsg {
-    StartSolving,
     Reset,
     ChangeSpeed(i32),
     TickSolver,
@@ -51,24 +50,20 @@ impl Component for SolverCmp {
         }
     }
 
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+    fn update(&mut self, _: &Context<Self>, msg: Self::Message) -> bool {
         log::debug!("got {:?}", msg);
         match msg {
-            SolverCmpMsg::StartSolving => {
-                if let Some(target_date) = self.target {
-                    self.init_solver(target_date, ctx.link());
-                    true
-                } else {
-                    false
-                }
-            }
-
             SolverCmpMsg::Reset => {
                 self.take_solver()
             }
 
             SolverCmpMsg::ChangeSpeed(speed) => {
-                todo!()
+                if speed != self.speed {
+                    self.speed = speed;
+                    true
+                } else {
+                    false
+                }
             }
 
             SolverCmpMsg::TickSolver => {
