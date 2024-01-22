@@ -26,6 +26,19 @@ body, html {
     margin-right: 0.75em;
   }
 
+  .button {
+    user-select: none;
+    margin-top: auto;
+    margin-bottom: auto;
+    font-size: 26pt;
+    cursor: pointer;
+
+    &.disabled {
+      cursor: not-allowed;
+      color: gray;
+    }
+  }
+
   margin: 2em;
 }
 
@@ -165,6 +178,8 @@ body, html {
 
         .contents {
           position: absolute;
+          pointer-events: none;
+          user-select: none;
           &.covering {
             background-color: transparentize($colorHighlight, .4);
           }

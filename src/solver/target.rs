@@ -54,6 +54,20 @@ impl TargetDate {
             None
         }
     }
+
+    pub fn next(&self, leap_year: bool) -> Option<Self> {
+        let next_weekday = self.day_of_week.next();
+        if let Some(next_day) = self.month.next_day(self.day_of_month, leap_year) {
+            let mut next = *self;
+            next.day_of_month = next_day;
+            next.day_of_week = next_weekday;
+            Some(next)
+        } else if let Some(next_month) = self.month.next() {
+            Some(TargetDate{month: next_month, day_of_month: 1, day_of_week: next_weekday})
+        } else {
+            None
+        }
+    }
 }
 
 pub struct TargetDateIter {
@@ -85,16 +99,6 @@ impl TargetDateIter {
 
     fn advance(&mut self) {
         let current = if let Some(current) = self.current { current } else { return; };
-        let next_weekday = current.day_of_week.next();
-        self.current = if let Some(next_day) = current.month.next_day(current.day_of_month, self.leap_year) {
-            let mut next = current;
-            next.day_of_month = next_day;
-            next.day_of_week = next_weekday;
-            Some(next)
-        } else if let Some(next_month) = current.month.next() {
-            Some(TargetDate{month: next_month, day_of_month: 1, day_of_week: next_weekday})
-        } else {
-            None
-        };
+        self.current = current.next(self.leap_year);
     }
 }

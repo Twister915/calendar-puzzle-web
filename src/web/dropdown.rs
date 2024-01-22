@@ -8,6 +8,7 @@ pub struct DropdownProps<P: PartialEq + Clone + 'static> {
     pub placeholder: String,
     pub on_change: Callback<Option<P>>,
     pub disabled: bool,
+    pub value: Option<P>,
 }
 
 pub struct Dropdown<P> {
@@ -45,13 +46,14 @@ where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static
     fn create(ctx: &Context<Self>) -> Self {
         let props = ctx.props();
         let values = Self::wrap_values(&props.values);
+        let picked = props.value.as_ref().and_then(|value| values.iter().enumerate().filter(|(_, v)| v.value == *value).map(|(idx, _)| idx).next());
         Self {
             values,
             placeholder: props.placeholder.clone(),
             on_change: props.on_change.clone(),
             disabled: props.disabled,
 
-            picked: None,
+            picked,
             input_focused: false,
             list_focused: false,
             user_input: None,
@@ -119,6 +121,11 @@ where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static
                 self.update_pick(None);
             }
 
+            any_changes = true;
+        }
+
+        if let Some(value) = &new_props.value {
+            self.update_pick(self.values.iter().enumerate().filter(|(_, v)| v.value == *value).map(|(idx, _)| idx).next());
             any_changes = true;
         }
 
@@ -220,6 +227,7 @@ impl<P> Dropdown<P> where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug 
         if self.picked != new_pick {
             self.picked = new_pick;
             let emission = self.picked().map(|p| p.value.clone());
+            self.user_input = self.picked().map(|v| v.display.clone());
             self.on_change.emit(emission);
             true
         } else {

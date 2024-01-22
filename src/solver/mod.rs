@@ -27,5 +27,5 @@ mod board;
 pub use board::{Weekday, Month, BOARD_LABELS, BoardLabel};
 pub use target::{TargetDate, TargetDateIter};
 pub use mask::{TaggedMask, CellTag};
-pub use solve::{Solution, SolverMsg, solve, SolverItrExt};
+pub use solve::{Solution, SolverMsg, solve};
 pub use prelude::{PUZZLE_WIDTH, PUZZLE_HEIGHT, NUM_PIECES, iter_coordinates};

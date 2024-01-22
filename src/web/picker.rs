@@ -19,6 +19,7 @@ pub enum PickerMsg {
     PickMonth(Option<Month>),
     PickWeekday(Option<Weekday>),
     PickDay(Option<i8>),
+    NextDay,
 }
 
 impl Component for Picker {
@@ -66,6 +67,20 @@ impl Component for Picker {
                     false
                 }
             }
+
+            PickerMsg::NextDay => {
+                if let Some(target_date) = self.target_date() {
+                    if let Some(next_date) = target_date.next(self.leap_year) {
+                        self.month = Some(next_date.month);
+                        self.day = Some(next_date.day_of_month);
+                        self.weekday = Some(next_date.day_of_week);
+                        self.emit_selection(ctx);
+                        return true;
+                    }
+                }
+
+                false
+            }
         }
     }
 
@@ -77,17 +92,25 @@ impl Component for Picker {
                     placeholder={"Weekday"}
                     values={Self::weekday_values()}
                     on_change={ctx.link().callback(|new_weekday| PickerMsg::PickWeekday(new_weekday))}
+                    value={self.weekday}
                     disabled={false}/>
                 <Dropdown<Month>
                     placeholder={"Month"}
                     values={Self::month_values()}
                     on_change={ctx.link().callback(|new_month| PickerMsg::PickMonth(new_month))}
+                    value={self.month}
                     disabled={false}/>
                 <Dropdown<i8>
                     placeholder={"Day"}
                     values={self.day_of_month_values()}
                     on_change={ctx.link().callback(|new_day| PickerMsg::PickDay(new_day))}
+                    value={self.day}
                     disabled={self.month.is_none()}/>
+                <div class={classes!(
+                    "next-button",
+                    "button",
+                    if self.target_date().is_none() { Some("disabled") } else { None },
+                )} onclick={ctx.link().callback(|_| PickerMsg::NextDay)}>{"⪢"}</div>
             </div>
         }
     }
