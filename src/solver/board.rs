@@ -1,4 +1,5 @@
 use super::prelude::*;
+use std::fmt;
 
 #[derive(Copy, Clone, PartialEq, PartialOrd, Ord, Eq, Hash, Debug)]
 pub enum Month {
@@ -16,6 +17,12 @@ pub enum Month {
     December,
 }
 
+impl fmt::Display for Month {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(self, f)
+    }
+}
+
 #[derive(Copy, Clone, PartialEq, PartialOrd, Ord, Eq, Hash, Debug)]
 pub enum Weekday {
     Monday,
@@ -25,6 +32,12 @@ pub enum Weekday {
     Friday,
     Saturday,
     Sunday,
+}
+
+impl fmt::Display for Weekday {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(self, f)
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Debug)]
@@ -77,7 +90,7 @@ impl Month {
         }
     }
 
-    fn number_days(&self, leap_year: bool) -> i8 {
+    pub fn number_days(&self, leap_year: bool) -> i8 {
         use Month as M;
         match self {
             M::January => 31,

@@ -1,0 +1,151 @@
+$colorBackground: #1D2B53;
+$colorPrimary: #7E2553;
+$colorHighlight: #FF004D;
+$colorAccent: #FAEF5D;
+
+body, html {
+  margin: 0;
+  padding: 0;
+  background-color: $colorBackground;
+  color: $colorAccent;
+}
+
+.target-picker {
+  display: flex;
+
+  .dropdown {
+    margin-right: 0.75em;
+  }
+
+  margin: 2em;
+}
+
+.dropdown {
+  $inputHeight: 2em;
+  $inputWidth: 10em;
+  $fontSize: 22pt;
+
+  display: flex;
+  font-size: $fontSize;
+
+  .input {
+    display: flex;
+    $clearWidth: 0.8em;
+    width: $inputWidth;
+
+    &, input {
+      padding: 0;
+      margin: 0;
+      height: $inputHeight;
+      font-size: $fontSize;
+      background: none;
+      border: none;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    input {
+      width: $inputWidth - $clearWidth;
+    }
+
+    .clear {
+      cursor: pointer;
+      width: $clearWidth;
+      margin-top: auto;
+      margin-bottom: auto;
+    }
+  }
+
+  &:not(.error).no-pick .input input {
+    color: grayscale($colorPrimary);
+  }
+
+  &:not(.error).has-pick .input input {
+    color: $colorAccent;
+  }
+
+  &.error .input input {
+    color: $colorHighlight;
+  }
+
+  $borderHeight: 0.1em;
+
+  border-bottom: $borderHeight solid $colorPrimary;
+  &.active {
+    border-bottom: $borderHeight solid $colorAccent;
+  }
+
+  &.disabled {
+    cursor: not-allowed;
+    border-bottom: $borderHeight solid desaturate(grayscale($colorAccent), 50%);
+    color: desaturate(grayscale($colorAccent), 50%);
+  }
+
+  .autocomplete {
+    position: absolute;
+    margin-top: $inputHeight + $borderHeight;
+    width: $inputWidth;
+
+    .entry {
+      background-color: $colorPrimary;
+      cursor: pointer;
+      padding: 0.25em;
+
+      &:hover {
+        background-color: $colorHighlight;
+      }
+    }
+
+    &.hide {
+      display: none;
+    }
+  }
+}
+
+.board {
+  $cellSize: 3.2em;
+  margin: 1.5em;
+  .row {
+    display: flex;
+    &:last-child {
+      .cell {
+        border-bottom: 1px solid black;
+      }
+    }
+
+    .cell {
+      text-align: center;
+      user-select: none;
+      border-left: 1px solid black;
+      border-top: 1px solid black;
+      &:last-child {
+        border-right: 1px solid black;
+      }
+
+      &, .contents {
+        width: $cellSize;
+        height: $cellSize;
+      }
+
+      .contents {
+        position: absolute;
+        &.covering {
+          background-color: transparentize($colorHighlight, .4);
+        }
+
+        &.winning-space {
+          background-color: transparentize(green, .4);
+        }
+      }
+
+      .lbl {
+        margin-top: auto;
+        margin-bottom: auto;
+        padding: 0.3em;
+        width: 100%;
+      }
+    }
+  }
+}

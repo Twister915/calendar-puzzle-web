@@ -14,6 +14,13 @@ log = "0.4"
 version = "0.21"
 features = ["csr"]
 
+[dependencies.web-sys]
+version = "0.3"
+features = [
+    "KeyboardEvent",
+    "HtmlInputElement"
+]
+
 [profile.release]
 lto = "fat"
 codegen-units = 1
