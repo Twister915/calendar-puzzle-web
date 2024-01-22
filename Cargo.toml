@@ -22,7 +22,6 @@ features = [
 ]
 
 [profile.release]
-lto = "fat"
+lto = 'fat'
 codegen-units = 1
 incremental = false
-panic = "abort"
