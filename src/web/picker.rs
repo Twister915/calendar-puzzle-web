@@ -35,7 +35,7 @@ impl Component for Picker {
     }
 
     fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        log::debug!("got {:?}", msg);
+        log::info!("got {:?}", msg);
         match msg {
             PickerMsg::PickMonth(month) => {
                 if self.month != month {

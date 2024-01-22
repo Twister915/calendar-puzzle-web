@@ -44,7 +44,7 @@ impl Component for SolverCmp {
         Self {
             target: ctx.props().target,
             solver: None,
-            speed: 75,
+            speed: 35,
         }
     }
 
@@ -147,7 +147,7 @@ impl SolverCmp {
             Some(SolverMsg::Unsolved(_, last_frame)) => SolverState::Solving(SolvingState {
                 frames,
                 last_frame,
-                _ticker: Ticker::create(100, link.callback(|_| SolverCmpMsg::TickSolver)),
+                _ticker: Ticker::create(50, link.callback(|_| SolverCmpMsg::TickSolver)),
                 steps: 0,
             }),
             Some(SolverMsg::Impossible) => SolverState::Impossible(0),
@@ -239,7 +239,8 @@ impl SolverCmp {
 }
 
 struct Ticker {
-    callback: Closure<dyn FnMut()>,
+    #[allow(unused)]
+    _callback: Closure<dyn FnMut()>,
     id: i32,
 }
 
@@ -250,7 +251,7 @@ impl Ticker {
         }) as Box<dyn FnMut()>);
         let cb_ref = callback.as_ref().unchecked_ref();
         let id = web_sys::window().unwrap().set_interval_with_callback_and_timeout_and_arguments_0(cb_ref, interval).unwrap();
-        Self{ callback, id }
+        Self{ _callback: callback, id }
     }
 }
 

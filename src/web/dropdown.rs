@@ -37,7 +37,7 @@ pub enum DropdownMsg {
 }
 
 impl<P> Component for Dropdown<P>
-where P: PartialEq + Eq + Clone + fmt::Display + 'static
+where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static
 {
     type Message = DropdownMsg;
     type Properties = DropdownProps<P>;
@@ -104,7 +104,7 @@ where P: PartialEq + Eq + Clone + fmt::Display + 'static
             }).next());
 
             self.values = new_values;
-            self.picked = new_picked;
+            self.update_pick(new_picked);
             any_changes = true;
         }
 
@@ -113,10 +113,10 @@ where P: PartialEq + Eq + Clone + fmt::Display + 'static
         if self.disabled != new_props.disabled {
             self.disabled = new_props.disabled;
             if self.disabled {
-                self.picked = None;
                 self.user_input = None;
                 self.list_focused = false;
                 self.input_focused = false;
+                self.update_pick(None);
             }
 
             any_changes = true;
@@ -143,7 +143,7 @@ where P: PartialEq + Eq + Clone + fmt::Display + 'static
     }
 }
 
-impl<P> Dropdown<P> where P: PartialEq + Eq + Clone + fmt::Display + 'static {
+impl<P> Dropdown<P> where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static {
     fn has_selection(&self) -> bool {
         self.picked().is_some()
     }
@@ -223,7 +223,8 @@ impl<P> Dropdown<P> where P: PartialEq + Eq + Clone + fmt::Display + 'static {
     fn update_pick(&mut self, new_pick: Option<usize>) -> bool {
         if self.picked != new_pick {
             self.picked = new_pick;
-            self.on_change.emit(self.picked().map(|p| p.value.clone()));
+            let emission = self.picked().map(|p| p.value.clone());
+            self.on_change.emit(emission);
             true
         } else {
             false
