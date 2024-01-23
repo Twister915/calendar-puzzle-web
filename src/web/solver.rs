@@ -45,7 +45,7 @@ impl Component for SolverCmp {
         Self {
             target: ctx.props().target,
             solver: None,
-            speed: 17,
+            speed: 35,
             focus_piece: None,
         }
     }
@@ -189,7 +189,7 @@ impl SolverCmp {
                                 {
                                     if let Some(tagged_mask) = tagged_mask {
                                         match tagged_mask.get(x, y) {
-                                            CellTag::Covered(piece_idx) => html! {<div class={classes!("contents", "covering", format!("piece-{}", piece_idx))}> {format!("{}", piece_idx)} </div>},
+                                            CellTag::Covered(piece_idx) => html! {<div class={classes!("contents", "covering", format!("piece-{}", piece_idx))}> </div>},
                                             CellTag::Winner => html! { <div class="contents winning-space"></div> },
                                             CellTag::Uncovered => html! {<> </>}
                                         }

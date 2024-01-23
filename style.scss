@@ -1,7 +1,7 @@
-$colorBackground: #1D2B53;
-$colorPrimary: #7E2553;
-$colorHighlight: #FF004D;
-$colorAccent: #FAEF5D;
+$colorBackground: #383127;
+$colorPrimary: #70AB8F;
+$colorHighlight: #DC5B21;
+$colorAccent: #E4DBBF;
 
 body, html {
   margin: 0;
@@ -144,24 +144,32 @@ body, html {
     $cellSize: 5em;
     .row {
       display: flex;
+
+      $borderSize: 3px;
+      $borderColor: black;
+
       &:last-child {
         .cell {
-          border-bottom: 1px solid black;
+          border-bottom: $borderSize solid $borderColor;
         }
       }
 
       .cell {
         text-align: center;
         user-select: none;
+        background-color: #C19A6B;
+        color: #3B270C;
 
         .lbl {
           user-select: none;
           pointer-events: none;
+          font-size: 18pt;
         }
-        border-left: 1px solid black;
-        border-top: 1px solid black;
+
+        border-left: $borderSize solid $borderColor;
+        border-top: $borderSize solid $borderColor;
         &:last-child {
-          border-right: 1px solid black;
+          border-right: $borderSize solid $borderColor;
         }
 
         &.focus-light .contents.covering {
@@ -169,7 +177,7 @@ body, html {
         }
 
         &.focus-dim .contents.covering {
-          background-color: gray;
+          background-color: #868074;
         }
 
         &, .contents {
@@ -177,37 +185,48 @@ body, html {
           height: $cellSize;
         }
 
-        &:not(.focus-dim):not(.focus-light) .contents.covering {
-          $transparent: 0.4;
+        $transparent: 0;
 
-          &.piece-0 { background-color: transparentize(red, $transparent); }
-          &.piece-1 { background-color: transparentize(green, $transparent); }
-          &.piece-2 { background-color: transparentize(blue, $transparent); }
-          &.piece-3 { background-color: transparentize(purple, $transparent); }
-          &.piece-4 { background-color: transparentize(white, $transparent); }
-          &.piece-5 { background-color: transparentize(orange, $transparent); }
-          &.piece-6 { background-color: transparentize(yellow, $transparent); }
-          &.piece-7 { background-color: transparentize(magenta, $transparent); }
-          &.piece-8 { background-color: transparentize(bisque, $transparent); }
+        &:not(.focus-dim):not(.focus-light) .contents.covering {
+
+          //&.piece-0 { background-color: transparentize(#EFC3A4, $transparent); }
+          //&.piece-1 { background-color: transparentize(#BE7656, $transparent); }
+          //&.piece-2 { background-color: transparentize(#4B1F0E, $transparent); }
+          //&.piece-3 { background-color: transparentize(#794028, $transparent); }
+          //&.piece-4 { background-color: transparentize(#4C6444, $transparent); }
+          //&.piece-5 { background-color: transparentize(#555050, $transparent); }
+          //&.piece-6 { background-color: transparentize(#253529, $transparent); }
+          //&.piece-7 { background-color: transparentize(#5B4E4B, $transparent); }
+          //&.piece-8 { background-color: transparentize(#2A140E, $transparent); }
+
+          &.piece-0 { background-color: transparentize(#517476, $transparent); }
+          &.piece-1 { background-color: transparentize(#8e9880, $transparent); }
+          &.piece-2 { background-color: transparentize(#c24c3e, $transparent); }
+          &.piece-3 { background-color: transparentize(#bb6542, $transparent); }
+          &.piece-4 { background-color: transparentize(#7a865e, $transparent); }
+          &.piece-5 { background-color: transparentize(#a15869, $transparent); }
+          &.piece-6 { background-color: transparentize(#48536f, $transparent); }
+          &.piece-7 { background-color: transparentize(#bc8a8d, $transparent); }
+          &.piece-8 { background-color: transparentize(#a9b59f, $transparent); }
         }
 
         .contents {
           position: absolute;
           pointer-events: none;
           user-select: none;
-          &.covering {
-            background-color: transparentize($colorHighlight, .4);
-          }
+          //&.covering {
+          //  background-color: transparentize($colorHighlight, .4);
+          //}
 
           &.winning-space {
-            background-color: transparentize(green, .4);
+            //background-color: transparentize(beige, 0.4);
           }
         }
 
         .lbl {
           margin-top: auto;
           margin-bottom: auto;
-          padding: 0.3em;
+          //padding: 0.3em;
           width: 100%;
         }
       }
