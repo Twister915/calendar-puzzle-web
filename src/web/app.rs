@@ -38,6 +38,7 @@ impl Component for App {
         html! {
             <div class="app">
                 <h1 class="title">{"Joey's Calendar Puzzle Solver"}</h1>
+                <p class="subtext">{"Coding by Joey, style by Siqi!"}</p>
                 <Picker on_picked={ctx.link().callback(AppMsg::TargetPicked)} />
                 <SolverCmp target={self.target} />
             </div>

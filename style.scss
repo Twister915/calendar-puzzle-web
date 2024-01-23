@@ -15,8 +15,15 @@ body, html {
 }
 
 .title {
+  margin-bottom: 0.6em;
   margin-left: 0.25em;
   font-size: 32pt;
+}
+
+.subtext {
+  margin-left: 0.81em;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .target-picker {

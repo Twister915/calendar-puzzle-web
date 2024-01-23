@@ -45,7 +45,7 @@ impl Component for SolverCmp {
         Self {
             target: ctx.props().target,
             solver: None,
-            speed: 35,
+            speed: 17,
             focus_piece: None,
         }
     }
