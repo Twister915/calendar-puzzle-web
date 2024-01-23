@@ -141,7 +141,7 @@ body, html {
   }
 
   .board {
-    $cellSize: 3.2em;
+    $cellSize: 5em;
     .row {
       display: flex;
       &:last-child {
