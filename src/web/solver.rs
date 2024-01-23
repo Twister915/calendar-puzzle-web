@@ -45,7 +45,7 @@ impl Component for SolverCmp {
         Self {
             target: ctx.props().target,
             solver: None,
-            speed: 17,
+            speed: 57,
             focus_piece: None,
         }
     }
@@ -153,7 +153,7 @@ impl SolverCmp {
             Some(SolverMsg::Unsolved(_, last_frame)) => SolverState::Solving(SolvingState {
                 frames,
                 last_frame,
-                _ticker: Ticker::create(25, link.callback(|_| SolverCmpMsg::TickSolver)),
+                _ticker: Ticker::create(100, link.callback(|_| SolverCmpMsg::TickSolver)),
                 steps: 0,
             }),
             Some(SolverMsg::Impossible) => SolverState::Impossible(0),
