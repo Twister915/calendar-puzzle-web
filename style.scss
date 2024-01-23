@@ -153,27 +153,42 @@ body, html {
       .cell {
         text-align: center;
         user-select: none;
+
+        .lbl {
+          user-select: none;
+          pointer-events: none;
+        }
         border-left: 1px solid black;
         border-top: 1px solid black;
         &:last-child {
           border-right: 1px solid black;
         }
 
-        &.focus-light {
-          .contents.covering {
-            background-color: $colorHighlight;
-          }
+        &.focus-light .contents.covering {
+          background-color: $colorHighlight;
         }
 
-        &.focus-dim {
-          .contents.covering {
-            background-color: gray;
-          }
+        &.focus-dim .contents.covering {
+          background-color: gray;
         }
 
         &, .contents {
           width: $cellSize;
           height: $cellSize;
+        }
+
+        &:not(.focus-dim):not(.focus-light) .contents.covering {
+          $transparent: 0.4;
+
+          &.piece-0 { background-color: transparentize(red, $transparent); }
+          &.piece-1 { background-color: transparentize(green, $transparent); }
+          &.piece-2 { background-color: transparentize(blue, $transparent); }
+          &.piece-3 { background-color: transparentize(purple, $transparent); }
+          &.piece-4 { background-color: transparentize(white, $transparent); }
+          &.piece-5 { background-color: transparentize(orange, $transparent); }
+          &.piece-6 { background-color: transparentize(yellow, $transparent); }
+          &.piece-7 { background-color: transparentize(magenta, $transparent); }
+          &.piece-8 { background-color: transparentize(bisque, $transparent); }
         }
 
         .contents {
