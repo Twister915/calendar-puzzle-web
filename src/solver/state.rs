@@ -179,12 +179,6 @@ impl GameState {
     }
 
     pub fn available_piece_idxes(self) -> impl Iterator<Item = usize> {
-        (0..NUM_PIECES).filter_map(move |idx| {
-            if self.pieces[idx].is_none() {
-                Some(idx)
-            } else {
-                None
-            }
-        })
+        (0..NUM_PIECES).filter(move |&idx| self.pieces[idx].is_none())
     }
 }

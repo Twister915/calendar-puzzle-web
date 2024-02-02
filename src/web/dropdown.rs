@@ -236,7 +236,7 @@ where
         self.picked.and_then(|idx| self.values.get(idx))
     }
 
-    fn wrap_values(v: &Vec<P>) -> Vec<DropdownValue<P>> {
+    fn wrap_values(v: &[P]) -> Vec<DropdownValue<P>> {
         return v
             .iter()
             .map(|v| DropdownValue {
