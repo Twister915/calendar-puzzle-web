@@ -12,7 +12,7 @@ pub struct Placement {
 impl Placement {
     pub const NUM_PLACEMENTS: usize = PUZZLE_WIDTH * PUZZLE_HEIGHT * 4 * 2;
 
-    pub fn code(&self) -> Option<usize> {
+    pub fn code(self) -> Option<usize> {
         let x = self.x as usize;
         let y = self.y as usize;
         if x >= PUZZLE_WIDTH {
@@ -67,7 +67,7 @@ impl Placement {
                             })
                         })
                     })
-                    .filter(move |placement| {
+                    .filter(move |&placement| {
                         piece
                             .mask(placement)
                             .map(|mask| mask.is_covered(x as usize, y as usize))
@@ -108,7 +108,7 @@ impl GameState {
         if let Some(new_placement) = placement {
             // Some if piece_idx is valid and placement is on the board (valid)
             // None otherwise (therefore do not process the update)
-            if let Some(mask_update) = mask_for_piece(piece_idx, &new_placement) {
+            if let Some(mask_update) = mask_for_piece(piece_idx, new_placement) {
                 let last_value = &self.pieces[piece_idx];
 
                 // what is our current board mask, without this piece placed anywhere?
@@ -154,7 +154,7 @@ impl GameState {
                 out.set(x, y, CellTag::Winner)
             }
         }
-        for (piece_idx, placement) in self.pieces.iter().enumerate() {
+        for (piece_idx, &placement) in self.pieces.iter().enumerate() {
             if let Some(placement) = placement {
                 if let Some(mask) = mask_for_piece(piece_idx, placement) {
                     for (x, y) in iter_coordinates() {

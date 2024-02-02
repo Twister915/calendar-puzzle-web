@@ -12,7 +12,7 @@ impl BoardMask {
         positions
             .iter()
             .enumerate()
-            .filter_map(|(idx, placement)| placement.as_ref().and_then(|p| mask_for_piece(idx, p)))
+            .filter_map(|(idx, &placement)| placement.and_then(|p| mask_for_piece(idx, p)))
             .for_each(|mask| out.apply(mask));
         out
     }
@@ -21,7 +21,7 @@ impl BoardMask {
         Self(u64::MAX >> (64 - (PUZZLE_WIDTH * PUZZLE_HEIGHT)))
     }
 
-    pub fn is_covered(&self, x: usize, y: usize) -> bool {
+    pub fn is_covered(self, x: usize, y: usize) -> bool {
         self.0 & Self::mask(x, y) != 0
     }
 
@@ -38,11 +38,11 @@ impl BoardMask {
         1u64 << ((y * PUZZLE_WIDTH) + x) as u64
     }
 
-    pub fn conflicts_with(&self, other: Self) -> bool {
+    pub fn conflicts_with(self, other: Self) -> bool {
         self.0 & other.0 != 0
     }
 
-    pub fn covers_winning_mask(&self, winning_mask: Self) -> bool {
+    pub fn covers_winning_mask(self, winning_mask: Self) -> bool {
         self.0 & !winning_mask.0 != 0
     }
 

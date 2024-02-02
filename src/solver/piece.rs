@@ -112,7 +112,7 @@ impl Piece {
         let mut masks = [None; Placement::NUM_PLACEMENTS];
         for placement in Placement::iter_all() {
             let code = placement.code().unwrap();
-            masks[code] = mask_for_placement(mask, &placement);
+            masks[code] = mask_for_placement(mask, placement);
         }
 
         Self {
@@ -122,7 +122,7 @@ impl Piece {
         }
     }
 
-    pub fn mask(&self, placement: &Placement) -> Option<BoardMask> {
+    pub fn mask(&self, placement: Placement) -> Option<BoardMask> {
         placement.code().and_then(|code| self.masks[code])
     }
 
@@ -138,7 +138,7 @@ impl Piece {
 
 fn mask_for_placement<const W: usize, const H: usize>(
     mask: [[bool; W]; H],
-    placement: &Placement,
+    placement: Placement,
 ) -> Option<BoardMask> {
     let rotated_mask = transformed(mask, placement.rotation, placement.flipped);
     let piece_width = rotated_mask.width();
@@ -239,6 +239,6 @@ pub fn piece(piece_idx: usize) -> Option<&'static Piece> {
     PIECES.get(piece_idx)
 }
 
-pub fn mask_for_piece(piece_idx: usize, placement: &Placement) -> Option<BoardMask> {
+pub fn mask_for_piece(piece_idx: usize, placement: Placement) -> Option<BoardMask> {
     piece(piece_idx).and_then(|piece| piece.mask(placement))
 }
