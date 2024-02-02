@@ -25,7 +25,7 @@ impl Placement {
 
         let pos_code = y * PUZZLE_WIDTH + x;
         let rotation = (self.rotation % 4) as usize;
-        let flipped = if self.flipped { 1usize } else { 0usize };
+        let flipped = usize::from(self.flipped);
 
         Some(pos_code << 3 | (rotation << 1) | flipped)
     }
@@ -151,7 +151,7 @@ impl GameState {
         let mut out = TaggedMask::default();
         for (x, y) in iter_coordinates() {
             if !winning_mask.is_covered(x, y) {
-                out.set(x, y, CellTag::Winner)
+                out.set(x, y, CellTag::Winner);
             }
         }
         for (piece_idx, &placement) in self.pieces.iter().enumerate() {

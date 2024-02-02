@@ -115,15 +115,7 @@ where
             let new_picked = current_picked.and_then(|picked_item| {
                 new_values
                     .iter()
-                    .enumerate()
-                    .filter_map(|(idx, new_v)| {
-                        if new_v.value == *picked_item {
-                            Some(idx)
-                        } else {
-                            None
-                        }
-                    })
-                    .next()
+                    .position(|new_v| new_v.value == *picked_item)
             });
 
             self.values = new_values;

@@ -164,6 +164,6 @@ impl Picker {
     }
 
     fn emit_selection(&self, ctx: &Context<Self>) {
-        ctx.props().on_picked.emit(self.target_date())
+        ctx.props().on_picked.emit(self.target_date());
     }
 }
