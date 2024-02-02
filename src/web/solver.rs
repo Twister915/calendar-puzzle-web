@@ -179,7 +179,7 @@ impl SolverCmp {
                                         BoardLabel::DayOfWeekLabel(_) => "lbl-weekday",
                                         BoardLabel::Unlabeled => "lbl-blank",
                                     },
-                                    tagged_mask.zip(self.focus_piece).and_then(|(tm, focus_piece_idx)| if tm.get(x, y) == CellTag::Covered(focus_piece_idx as u8) { Some("focus-light" )} else { Some("focus-dim") })
+                                    tagged_mask.zip(self.focus_piece).map(|(tm, focus_piece_idx)| if tm.get(x, y) == CellTag::Covered(focus_piece_idx as u8) { "focus-light"} else { "focus-dim" })
                                 )}
                                 onmouseenter={ctx.link().callback(move |_| SolverCmpMsg::FocusPiece(tagged_mask.and_then(|tm| if let CellTag::Covered(piece_idx) = tm.get(x, y) { Some(piece_idx as usize) } else { None })))}
                                 onmouseout={ctx.link().callback(|_| SolverCmpMsg::FocusPiece(None))}

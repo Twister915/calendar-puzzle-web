@@ -17,7 +17,7 @@ pub fn solve(target: TargetDate) -> impl Iterator<Item = SolverMsg> {
     target
         .winning_mask()
         .into_iter()
-        .flat_map(move |winning_mask| Solver::create(winning_mask))
+        .flat_map(Solver::create)
 }
 
 struct Solver {

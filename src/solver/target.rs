@@ -62,15 +62,11 @@ impl TargetDate {
             next.day_of_month = next_day;
             next.day_of_week = next_weekday;
             Some(next)
-        } else if let Some(next_month) = self.month.next() {
-            Some(TargetDate {
+        } else { self.month.next().map(|next_month| TargetDate {
                 month: next_month,
                 day_of_month: 1,
                 day_of_week: next_weekday,
-            })
-        } else {
-            None
-        }
+            }) }
     }
 }
 

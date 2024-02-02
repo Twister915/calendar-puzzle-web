@@ -195,7 +195,7 @@ where
                     onfocus={link.callback(|_| DropdownMsg::InputFocus(true))}
                     onblur={link.callback(|_| DropdownMsg::InputFocus(false))}
                     {onkeyup}
-                    value={self.user_input.clone().unwrap_or(String::default())}
+                    value={self.user_input.clone().unwrap_or_default()}
                     disabled={self.disabled}
                 />
                 {

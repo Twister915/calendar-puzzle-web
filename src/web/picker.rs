@@ -90,19 +90,19 @@ impl Component for Picker {
                 <Dropdown<Weekday>
                     placeholder={"Weekday"}
                     values={Self::weekday_values()}
-                    on_change={ctx.link().callback(|new_weekday| PickerMsg::PickWeekday(new_weekday))}
+                    on_change={ctx.link().callback(PickerMsg::PickWeekday)}
                     value={self.weekday}
                     disabled={false}/>
                 <Dropdown<Month>
                     placeholder={"Month"}
                     values={Self::month_values()}
-                    on_change={ctx.link().callback(|new_month| PickerMsg::PickMonth(new_month))}
+                    on_change={ctx.link().callback(PickerMsg::PickMonth)}
                     value={self.month}
                     disabled={false}/>
                 <Dropdown<i8>
                     placeholder={"Day"}
                     values={self.day_of_month_values()}
-                    on_change={ctx.link().callback(|new_day| PickerMsg::PickDay(new_day))}
+                    on_change={ctx.link().callback(PickerMsg::PickDay)}
                     value={self.day}
                     disabled={self.month.is_none()}/>
                 <div class={classes!(
