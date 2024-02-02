@@ -1,8 +1,11 @@
+use crate::solver::{
+    solve, BoardLabel, CellTag, Month, Solution, SolverMsg, TaggedMask, TargetDate, Weekday,
+    BOARD_LABELS, PUZZLE_HEIGHT, PUZZLE_WIDTH,
+};
 use web_sys::wasm_bindgen::closure::Closure;
 use web_sys::wasm_bindgen::JsCast;
 use yew::html::Scope;
 use yew::prelude::*;
-use crate::solver::{Month, Weekday, Solution, solve, SolverMsg, TaggedMask, TargetDate, PUZZLE_WIDTH, PUZZLE_HEIGHT, CellTag, BOARD_LABELS, BoardLabel};
 
 #[derive(PartialEq, Debug, Properties)]
 pub struct SolverProps {
@@ -25,7 +28,7 @@ pub struct SolverCmp {
 }
 
 struct SolvingState {
-    frames: Box<dyn Iterator<Item=SolverMsg>>,
+    frames: Box<dyn Iterator<Item = SolverMsg>>,
     last_frame: TaggedMask,
     steps: usize,
     _ticker: Ticker,
@@ -34,7 +37,7 @@ struct SolvingState {
 enum SolverState {
     Solving(SolvingState),
     Solved(Solution),
-    Impossible(usize)
+    Impossible(usize),
 }
 
 impl Component for SolverCmp {
@@ -53,9 +56,7 @@ impl Component for SolverCmp {
     fn update(&mut self, _: &Context<Self>, msg: Self::Message) -> bool {
         log::debug!("got {:?}", msg);
         match msg {
-            SolverCmpMsg::Reset => {
-                self.take_solver()
-            }
+            SolverCmpMsg::Reset => self.take_solver(),
 
             SolverCmpMsg::ChangeSpeed(speed) => {
                 if speed != self.speed {
@@ -75,24 +76,22 @@ impl Component for SolverCmp {
                                     Some(SolverMsg::Unsolved(_, last_frame)) => {
                                         state.last_frame = last_frame;
                                         state.steps += 1;
-                                    },
+                                    }
                                     Some(SolverMsg::Solved(solution)) => {
                                         *solver = SolverState::Solved(solution);
                                         return true;
-                                    },
+                                    }
                                     Some(SolverMsg::Impossible) => {
                                         *solver = SolverState::Impossible(state.steps + 1);
                                         return true;
-                                    },
-                                    None => panic!("impossible state???")
+                                    }
+                                    None => panic!("impossible state???"),
                                 }
                             }
 
                             true
-                        },
-                        SolverState::Impossible(_) | SolverState::Solved(_) => {
-                            false
                         }
+                        SolverState::Impossible(_) | SolverState::Solved(_) => false,
                     }
                 } else {
                     false
@@ -146,7 +145,6 @@ impl Component for SolverCmp {
 }
 
 impl SolverCmp {
-
     fn init_solver(&mut self, target_date: TargetDate, link: &Scope<Self>) {
         let mut frames = Box::new(solve(target_date));
         self.solver = Some(match frames.next() {
@@ -157,7 +155,7 @@ impl SolverCmp {
                 steps: 0,
             }),
             Some(SolverMsg::Impossible) => SolverState::Impossible(0),
-            v => panic!("unsupported initial state {:?}", v)
+            v => panic!("unsupported initial state {:?}", v),
         });
     }
 
@@ -257,17 +255,23 @@ struct Ticker {
 
 impl Ticker {
     pub fn create(interval: i32, target: Callback<()>) -> Self {
-        let callback = Closure::wrap(Box::new(move || {
-            target.emit(())
-        }) as Box<dyn FnMut()>);
+        let callback = Closure::wrap(Box::new(move || target.emit(())) as Box<dyn FnMut()>);
         let cb_ref = callback.as_ref().unchecked_ref();
-        let id = web_sys::window().unwrap().set_interval_with_callback_and_timeout_and_arguments_0(cb_ref, interval).unwrap();
-        Self{ _callback: callback, id }
+        let id = web_sys::window()
+            .unwrap()
+            .set_interval_with_callback_and_timeout_and_arguments_0(cb_ref, interval)
+            .unwrap();
+        Self {
+            _callback: callback,
+            id,
+        }
     }
 }
 
 impl Drop for Ticker {
     fn drop(&mut self) {
-        web_sys::window().unwrap().clear_interval_with_handle(self.id);
+        web_sys::window()
+            .unwrap()
+            .clear_interval_with_handle(self.id);
     }
 }

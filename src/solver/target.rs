@@ -63,7 +63,11 @@ impl TargetDate {
             next.day_of_week = next_weekday;
             Some(next)
         } else if let Some(next_month) = self.month.next() {
-            Some(TargetDate{month: next_month, day_of_month: 1, day_of_week: next_weekday})
+            Some(TargetDate {
+                month: next_month,
+                day_of_month: 1,
+                day_of_week: next_weekday,
+            })
         } else {
             None
         }
@@ -94,11 +98,18 @@ impl Iterator for TargetDateIter {
 
 impl TargetDateIter {
     pub fn create(start_at: TargetDate, leap_year: bool) -> Self {
-        Self { current: Some(start_at), leap_year }
+        Self {
+            current: Some(start_at),
+            leap_year,
+        }
     }
 
     fn advance(&mut self) {
-        let current = if let Some(current) = self.current { current } else { return; };
+        let current = if let Some(current) = self.current {
+            current
+        } else {
+            return;
+        };
         self.current = current.next(self.leap_year);
     }
 }

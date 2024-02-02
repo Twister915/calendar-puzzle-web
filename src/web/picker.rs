@@ -1,6 +1,6 @@
-use yew::prelude::*;
-use crate::solver::{Month, TargetDate, Weekday};
 use super::dropdown::*;
+use crate::solver::{Month, TargetDate, Weekday};
+use yew::prelude::*;
 
 #[derive(PartialEq, Debug, Properties)]
 pub struct PickerProps {
@@ -84,7 +84,6 @@ impl Component for Picker {
         }
     }
 
-
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <div class="target-picker">
@@ -118,7 +117,14 @@ impl Component for Picker {
 
 impl Picker {
     fn target_date(&self) -> Option<TargetDate> {
-        self.month.zip(self.weekday).zip(self.day).map(|((month, day_of_week), day_of_month)| TargetDate{month, day_of_week, day_of_month})
+        self.month
+            .zip(self.weekday)
+            .zip(self.day)
+            .map(|((month, day_of_week), day_of_month)| TargetDate {
+                month,
+                day_of_week,
+                day_of_month,
+            })
     }
 
     fn month_values() -> Vec<Month> {

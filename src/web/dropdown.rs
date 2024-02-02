@@ -1,6 +1,6 @@
-use yew::prelude::*;
 use std::fmt;
 use yew::html::Scope;
+use yew::prelude::*;
 
 #[derive(Clone, PartialEq, Properties)]
 pub struct DropdownProps<P: PartialEq + Clone + 'static> {
@@ -34,11 +34,12 @@ pub enum DropdownMsg {
     ListFocus(bool),
     InputChange(Option<String>),
     MakeSelection(usize),
-    Reset
+    Reset,
 }
 
 impl<P> Component for Dropdown<P>
-where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static
+where
+    P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static,
 {
     type Message = DropdownMsg;
     type Properties = DropdownProps<P>;
@@ -46,7 +47,14 @@ where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static
     fn create(ctx: &Context<Self>) -> Self {
         let props = ctx.props();
         let values = Self::wrap_values(&props.values);
-        let picked = props.value.as_ref().and_then(|value| values.iter().enumerate().filter(|(_, v)| v.value == *value).map(|(idx, _)| idx).next());
+        let picked = props.value.as_ref().and_then(|value| {
+            values
+                .iter()
+                .enumerate()
+                .filter(|(_, v)| v.value == *value)
+                .map(|(idx, _)| idx)
+                .next()
+        });
         Self {
             values,
             placeholder: props.placeholder.clone(),
@@ -66,7 +74,7 @@ where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static
             DropdownMsg::InputChange(new_input) => {
                 self.user_input = new_input.filter(|v| !v.is_empty());
                 self.update_pick(self.idx_from_input());
-            },
+            }
             DropdownMsg::InputFocus(focus) => {
                 self.input_focused = focus;
             }
@@ -95,15 +103,28 @@ where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static
             any_changes = true;
         }
 
-        let values_same = self.values.len() == new_props.values.len() && self.values.iter().zip(new_props.values.iter()).all(|(v1, v2)| v1.value == *v2);
+        let values_same = self.values.len() == new_props.values.len()
+            && self
+                .values
+                .iter()
+                .zip(new_props.values.iter())
+                .all(|(v1, v2)| v1.value == *v2);
         if !values_same {
             let current_picked = self.picked().map(|v| &v.value);
             let new_values = Self::wrap_values(&new_props.values);
-            let new_picked = current_picked.and_then(|picked_item| new_values.iter().enumerate().filter_map(|(idx, new_v)| if new_v.value == *picked_item {
-                Some(idx)
-            } else {
-                None
-            }).next());
+            let new_picked = current_picked.and_then(|picked_item| {
+                new_values
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(idx, new_v)| {
+                        if new_v.value == *picked_item {
+                            Some(idx)
+                        } else {
+                            None
+                        }
+                    })
+                    .next()
+            });
 
             self.values = new_values;
             self.update_pick(new_picked);
@@ -125,13 +146,19 @@ where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static
         }
 
         if let Some(value) = &new_props.value {
-            self.update_pick(self.values.iter().enumerate().filter(|(_, v)| v.value == *value).map(|(idx, _)| idx).next());
+            self.update_pick(
+                self.values
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, v)| v.value == *value)
+                    .map(|(idx, _)| idx)
+                    .next(),
+            );
             any_changes = true;
         }
 
         any_changes
     }
-
 
     fn view(&self, ctx: &Context<Self>) -> Html {
         let link = ctx.link();
@@ -150,7 +177,10 @@ where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static
     }
 }
 
-impl<P> Dropdown<P> where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static {
+impl<P> Dropdown<P>
+where
+    P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug + 'static,
+{
     fn view_input(&self, link: &Scope<Self>) -> Html {
         let onkeyup = link.callback(|e: web_sys::KeyboardEvent| {
             let input: web_sys::HtmlInputElement = e.target_unchecked_into();
@@ -193,10 +223,13 @@ impl<P> Dropdown<P> where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug 
         }
     }
 
-    fn matching_options(&self) -> impl Iterator<Item=(usize, &DropdownValue<P>)> {
-        self.values.iter()
-            .enumerate()
-            .filter(|(_, v)| self.user_input.as_ref().map(|input| v.display.starts_with(input)).unwrap_or(true))
+    fn matching_options(&self) -> impl Iterator<Item = (usize, &DropdownValue<P>)> {
+        self.values.iter().enumerate().filter(|(_, v)| {
+            self.user_input
+                .as_ref()
+                .map(|input| v.display.starts_with(input))
+                .unwrap_or(true)
+        })
     }
 
     fn picked(&self) -> Option<&DropdownValue<P>> {
@@ -204,9 +237,13 @@ impl<P> Dropdown<P> where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug 
     }
 
     fn wrap_values(v: &Vec<P>) -> Vec<DropdownValue<P>> {
-        return v.iter()
-            .map(|v| DropdownValue {value: v.clone(), display: format!("{}", v)})
-            .collect()
+        return v
+            .iter()
+            .map(|v| DropdownValue {
+                value: v.clone(),
+                display: format!("{}", v),
+            })
+            .collect();
     }
 
     fn is_picked(&self, option: &DropdownValue<P>) -> bool {
@@ -214,13 +251,19 @@ impl<P> Dropdown<P> where P: PartialEq + Eq + Clone + fmt::Display + fmt::Debug 
     }
 
     fn idx_from_input(&self) -> Option<usize> {
-        self.user_input
-            .as_ref()
-            .and_then(|input|
-                self.values.iter()
-                    .enumerate()
-                    .filter_map(|(idx, value)| if value.display == *input { Some(idx) } else { None })
-                    .next())
+        self.user_input.as_ref().and_then(|input| {
+            self.values
+                .iter()
+                .enumerate()
+                .filter_map(|(idx, value)| {
+                    if value.display == *input {
+                        Some(idx)
+                    } else {
+                        None
+                    }
+                })
+                .next()
+        })
     }
 
     fn update_pick(&mut self, new_pick: Option<usize>) -> bool {

@@ -1,7 +1,7 @@
 use super::prelude::*;
 
-use std::fmt;
 use fmt::Write;
+use std::fmt;
 
 #[derive(Copy, Clone, PartialEq, Eq, Default)]
 pub struct BoardMask(u64);
@@ -12,8 +12,7 @@ impl BoardMask {
         positions
             .iter()
             .enumerate()
-            .filter_map(|(idx, placement)| placement.as_ref()
-                .and_then(|p| mask_for_piece(idx, p)))
+            .filter_map(|(idx, placement)| placement.as_ref().and_then(|p| mask_for_piece(idx, p)))
             .for_each(|mask| out.apply(mask));
         out
     }
@@ -76,7 +75,7 @@ impl fmt::Display for BoardMask {
 pub enum CellTag {
     Covered(u8),
     Winner,
-    Uncovered
+    Uncovered,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq)]

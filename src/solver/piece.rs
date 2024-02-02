@@ -115,7 +115,11 @@ impl Piece {
             masks[code] = mask_for_placement(mask, &placement);
         }
 
-        Self { masks, width: W, height: H }
+        Self {
+            masks,
+            width: W,
+            height: H,
+        }
     }
 
     pub fn mask(&self, placement: &Placement) -> Option<BoardMask> {
@@ -132,7 +136,10 @@ impl Piece {
     }
 }
 
-fn mask_for_placement<const W: usize, const H: usize>(mask: [[bool; W]; H], placement: &Placement) -> Option<BoardMask> {
+fn mask_for_placement<const W: usize, const H: usize>(
+    mask: [[bool; W]; H],
+    placement: &Placement,
+) -> Option<BoardMask> {
     let rotated_mask = transformed(mask, placement.rotation, placement.flipped);
     let piece_width = rotated_mask.width();
     let piece_height = rotated_mask.height();
@@ -152,7 +159,11 @@ fn mask_for_placement<const W: usize, const H: usize>(mask: [[bool; W]; H], plac
     Some(out)
 }
 
-fn transformed<const W: usize, const H: usize>(mut mask: [[bool; W]; H], rotation: u8, flip: bool) -> RotatedMask<W, H> {
+fn transformed<const W: usize, const H: usize>(
+    mut mask: [[bool; W]; H],
+    rotation: u8,
+    flip: bool,
+) -> RotatedMask<W, H> {
     if flip {
         mask = flipped(mask);
     }
@@ -219,7 +230,7 @@ impl<const W: usize, const H: usize> RotatedMask<W, H> {
         use RotatedMask::{Horizontal as Hz, Vertical as Vt};
         match self {
             Hz(data) => data[y][x],
-            Vt(data) => data[y][x]
+            Vt(data) => data[y][x],
         }
     }
 }
@@ -231,4 +242,3 @@ pub fn piece(piece_idx: usize) -> Option<&'static Piece> {
 pub fn mask_for_piece(piece_idx: usize, placement: &Placement) -> Option<BoardMask> {
     piece(piece_idx).and_then(|piece| piece.mask(placement))
 }
-

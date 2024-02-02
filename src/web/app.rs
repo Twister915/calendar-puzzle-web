@@ -1,15 +1,15 @@
-use yew::prelude::*;
-use crate::solver::TargetDate;
 use super::picker::*;
 use super::solver::*;
+use crate::solver::TargetDate;
+use yew::prelude::*;
 
 pub struct App {
-    target: Option<TargetDate>
+    target: Option<TargetDate>,
 }
 
 #[derive(Debug)]
 pub enum AppMsg {
-    TargetPicked(Option<TargetDate>)
+    TargetPicked(Option<TargetDate>),
 }
 
 impl Component for App {
@@ -17,9 +17,7 @@ impl Component for App {
     type Properties = ();
 
     fn create(_: &Context<Self>) -> Self {
-        Self {
-            target: None
-        }
+        Self { target: None }
     }
 
     fn update(&mut self, _: &Context<Self>, msg: Self::Message) -> bool {
@@ -33,7 +31,6 @@ impl Component for App {
         true
     }
 
-
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <div class="app">
@@ -45,4 +42,3 @@ impl Component for App {
         }
     }
 }
-
