@@ -134,6 +134,21 @@ impl Piece {
             (self.width, self.height)
         }
     }
+
+    pub fn relative_offset_iter(
+        &self,
+        rotation: u8,
+        flipped: bool,
+    ) -> impl Iterator<Item = (u8, u8)> {
+        let placement = Placement {
+            x: 0,
+            y: 0,
+            rotation,
+            flipped,
+        };
+        let base_mask = self.masks[placement.code().unwrap()].unwrap();
+        base_mask.iter_covered()
+    }
 }
 
 fn mask_for_placement<const W: usize, const H: usize>(

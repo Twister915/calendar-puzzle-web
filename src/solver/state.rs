@@ -49,31 +49,32 @@ impl Placement {
         piece_idx: usize,
     ) -> impl Iterator<Item = Placement> {
         piece(piece_idx).into_iter().flat_map(move |piece| {
-            (0..4).flat_map(move |rotation| {
-                let (width, height) = piece.size(rotation);
-                let start_x = max(0isize, (x as isize) - (width as isize)) as u8;
-                let end_x = min(PUZZLE_WIDTH as u8, x + 1);
-                let start_y = max(0isize, (y as isize) - (height as isize)) as u8;
-                let end_y = min(PUZZLE_HEIGHT as u8, y + 1);
-
-                (start_y..end_y)
-                    .flat_map(move |y| {
-                        (start_x..end_x).flat_map(move |x| {
-                            [false, true].map(move |flipped| Placement {
-                                x,
-                                y,
+            (0..4)
+                .flat_map(move |rotation| [false, true].map(|flipped| (rotation, flipped)))
+                .flat_map(move |(rotation, flipped)| {
+                    let (w, h) = piece.size(rotation);
+                    piece.relative_offset_iter(rotation, flipped).filter_map(
+                        // For each point in the piece, position it so that point is at (x, y)
+                        // e.g if the piece has (0, 0), we place it at (x, y) to place that point at (x, y)
+                        // if the piece has (1, 1), we place it at (x - 1, y - 1)
+                        move |(dx, dy)| -> Option<Placement> {
+                            let position_x = x.checked_sub(dx)?;
+                            if position_x as usize + w > PUZZLE_WIDTH {
+                                return None;
+                            }
+                            let position_y = y.checked_sub(dy)?;
+                            if position_y as usize + h > PUZZLE_HEIGHT {
+                                return None;
+                            }
+                            Some(Placement {
+                                x: position_x,
+                                y: position_y,
                                 rotation,
                                 flipped,
                             })
-                        })
-                    })
-                    .filter(move |&placement| {
-                        piece
-                            .mask(placement)
-                            .map(|mask| mask.is_covered(x as usize, y as usize))
-                            .unwrap_or(false)
-                    })
-            })
+                        },
+                    )
+                })
         })
     }
 }
