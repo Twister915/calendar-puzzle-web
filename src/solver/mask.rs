@@ -42,28 +42,38 @@ impl BoardMask {
     ///
     /// Any values which are shifted off the board are lost.
     pub const fn shifted(mut self, x: usize, y: usize) -> Self {
+        const fn mask_for_x_shift(x: usize) -> u64 {
+            let mut mask = BoardMask::filled().0;
+            let mut row = 0;
+            while row < PUZZLE_HEIGHT {
+                // Clear the bits that would be shifted from the left side of each row
+                // (they should shift in zeros, but they might have shifted in values from the previous row)
+
+                // This makes a bitmask with bits 0..x set to 1, then shifts it up to the current row
+                let shifted_from_prev_row = ((1 << x) - 1) << (row * PUZZLE_WIDTH);
+                // We then clear those bits from the mask, so they will be zeroed
+                mask &= !shifted_from_prev_row;
+                row += 1;
+            }
+            mask
+        }
+        // Pre-computed mask per x shift
+        const LOW_COLUMN_MASKS: [u64; PUZZLE_WIDTH] = {
+            let mut out = [0; PUZZLE_WIDTH];
+            let mut x = 0;
+            while x < PUZZLE_WIDTH {
+                out[x] = mask_for_x_shift(x);
+                x += 1;
+            }
+            out
+        };
+
         if y >= PUZZLE_HEIGHT || x >= PUZZLE_WIDTH {
             return Self::new();
         }
         let shift = (y * PUZZLE_WIDTH) + x;
         self.0 <<= shift;
-
-        let mut mask = Self::filled().0;
-        if x != 0 {
-            // contains the low `x` bits of the second row (because nothing could be shifted into the first row)
-            let mut low_bits_per_row = ((1u64 << x) - 1) << PUZZLE_WIDTH;
-            let mut rows_counted = 1;
-            while rows_counted < PUZZLE_HEIGHT {
-                // The first iteration, we'll have a single row, and add a second row to the mask
-                // The second iteration, we'll shift our two rows up by two, to get four rows
-                // Then finally, we'll shift our four rows up by four, to get all eight rows
-                low_bits_per_row |= low_bits_per_row << (PUZZLE_WIDTH * rows_counted);
-                rows_counted *= 2;
-            }
-            mask &= !low_bits_per_row;
-        }
-        self.0 &= mask;
-
+        self.0 &= LOW_COLUMN_MASKS[x];
         self
     }
 
