@@ -49,6 +49,18 @@ impl BoardMask {
     pub fn apply(&mut self, other: Self) {
         self.0 |= other.0;
     }
+
+    pub fn next_to_cover(self, winning_mask: Self) -> Option<(u8, u8)> {
+        let to_cover = !self.0 & winning_mask.0;
+        // The number of trailing zeros is also the index of the first 1
+        let pos = to_cover.trailing_zeros() as usize;
+        let (x, y) = (pos % PUZZLE_WIDTH, pos / PUZZLE_WIDTH);
+        if y < PUZZLE_HEIGHT {
+            Some((x.try_into().unwrap(), y.try_into().unwrap()))
+        } else {
+            None
+        }
+    }
 }
 
 impl fmt::Display for BoardMask {

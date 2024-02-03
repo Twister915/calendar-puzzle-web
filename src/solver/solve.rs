@@ -14,10 +14,7 @@ pub struct Solution {
 }
 
 pub fn solve(target: TargetDate) -> impl Iterator<Item = SolverMsg> {
-    target
-        .winning_mask()
-        .into_iter()
-        .flat_map(Solver::create)
+    target.winning_mask().into_iter().flat_map(Solver::create)
 }
 
 struct Solver {
@@ -146,8 +143,8 @@ impl SolveFrame {
     fn create(state: GameState, winning_mask: BoardMask) -> Self {
         let piece_placements = Box::new(
             state
-                .open_positions(winning_mask)
-                .next()
+                .mask()
+                .next_to_cover(winning_mask)
                 .into_iter()
                 .flat_map(move |(x, y)| {
                     state.available_piece_idxes().flat_map(move |piece_idx| {

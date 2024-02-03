@@ -169,15 +169,6 @@ impl GameState {
         out
     }
 
-    pub fn open_positions(&self, winning_mask: BoardMask) -> impl Iterator<Item = (u8, u8)> + '_ {
-        iter_coordinates()
-            .filter(move |(x, y)| {
-                !self.mask.is_covered(*x, *y) // is it open?
-                    && winning_mask.is_covered(*x, *y)
-            }) // should it be open?
-            .map(|(x, y)| (x as u8, y as u8))
-    }
-
     pub fn available_piece_idxes(self) -> impl Iterator<Item = usize> {
         (0..NUM_PIECES).filter(move |&idx| self.pieces[idx].is_none())
     }
