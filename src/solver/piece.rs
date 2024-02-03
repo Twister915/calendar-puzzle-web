@@ -4,7 +4,7 @@ use lazy_static::lazy_static;
 
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Piece {
-    masks: [Option<BoardMask>; Placement::NUM_PLACEMENTS],
+    masks: [BoardMask; RotationAndFlip::NUM],
     width: usize,
     height: usize,
 }
@@ -109,10 +109,9 @@ lazy_static! {
 
 impl Piece {
     pub fn with_mask<const W: usize, const H: usize>(mask: [[bool; W]; H]) -> Self {
-        let mut masks = [None; Placement::NUM_PLACEMENTS];
-        for placement in Placement::iter_all() {
-            let code = placement.code().unwrap();
-            masks[code] = mask_for_placement(mask, placement);
+        let mut masks = [BoardMask::new(); RotationAndFlip::NUM];
+        for (board_mask, rotation_and_flip) in masks.iter_mut().zip(RotationAndFlip::iter_all()) {
+            *board_mask = mask_for_placement(mask, rotation_and_flip);
         }
 
         Self {
@@ -123,7 +122,13 @@ impl Piece {
     }
 
     pub fn mask(&self, placement: Placement) -> Option<BoardMask> {
-        placement.code().and_then(|code| self.masks[code])
+        let rotation_and_flip = placement.rotation_and_flip();
+        let (w, h) = self.size(rotation_and_flip.rotation());
+        if placement.x as usize + w > PUZZLE_WIDTH || placement.y as usize + h > PUZZLE_HEIGHT {
+            return None;
+        }
+        let mask = self.masks[usize::from(rotation_and_flip.code())];
+        Some(mask.shifted(placement.x as usize, placement.y as usize))
     }
 
     pub fn size(&self, rotation: u8) -> (usize, usize) {
@@ -136,13 +141,8 @@ impl Piece {
     }
 
     pub fn relative_offset_iter(&self, rotation: u8, flipped: bool) -> BoardMaskIter {
-        let placement = Placement {
-            x: 0,
-            y: 0,
-            rotation,
-            flipped,
-        };
-        let base_mask = self.masks[placement.code().unwrap()].unwrap();
+        let rotation_and_flip = RotationAndFlip::new(rotation, flipped);
+        let base_mask = self.masks[usize::from(rotation_and_flip.code())];
         base_mask.iter_covered()
     }
 }
@@ -215,25 +215,23 @@ impl PiecePositions {
 
 fn mask_for_placement<const W: usize, const H: usize>(
     mask: [[bool; W]; H],
-    placement: Placement,
-) -> Option<BoardMask> {
-    let rotated_mask = transformed(mask, placement.rotation, placement.flipped);
+    rotation_and_flip: RotationAndFlip,
+) -> BoardMask {
+    let rotated_mask = transformed(
+        mask,
+        rotation_and_flip.rotation(),
+        rotation_and_flip.flipped(),
+    );
     let piece_width = rotated_mask.width();
     let piece_height = rotated_mask.height();
     let mut out = BoardMask::default();
-    for y_offset in 0..piece_height {
-        for x_offset in 0..piece_width {
-            let x = (placement.x as usize) + x_offset;
-            let y = (placement.y as usize) + y_offset;
-            if x >= PUZZLE_WIDTH || y >= PUZZLE_HEIGHT {
-                return None;
-            }
-
-            out.set_covered(x, y, rotated_mask.get(x_offset, y_offset));
+    for y in 0..piece_height {
+        for x in 0..piece_width {
+            out.set_covered(x, y, rotated_mask.get(x, y));
         }
     }
 
-    Some(out)
+    out
 }
 
 fn transformed<const W: usize, const H: usize>(

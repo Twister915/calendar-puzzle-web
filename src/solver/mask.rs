@@ -7,6 +7,10 @@ use std::fmt;
 pub struct BoardMask(u64);
 
 impl BoardMask {
+    pub const fn new() -> Self {
+        Self(0)
+    }
+
     pub fn compute(positions: &[Option<Placement>; NUM_PIECES]) -> Self {
         let mut out = Self::default();
         positions
@@ -17,11 +21,11 @@ impl BoardMask {
         out
     }
 
-    pub fn filled() -> Self {
+    pub const fn filled() -> Self {
         Self(u64::MAX >> (64 - (PUZZLE_WIDTH * PUZZLE_HEIGHT)))
     }
 
-    pub fn is_covered(self, x: usize, y: usize) -> bool {
+    pub const fn is_covered(self, x: usize, y: usize) -> bool {
         self.0 & Self::mask(x, y) != 0
     }
 
@@ -34,19 +38,48 @@ impl BoardMask {
         }
     }
 
+    /// Return a mask which is shifted by the given amount
+    ///
+    /// Any values which are shifted off the board are lost.
+    pub const fn shifted(mut self, x: usize, y: usize) -> Self {
+        if y >= PUZZLE_HEIGHT || x >= PUZZLE_WIDTH {
+            return Self::new();
+        }
+        let shift = (y * PUZZLE_WIDTH) + x;
+        self.0 <<= shift;
+
+        let mut mask = Self::filled().0;
+        if x != 0 {
+            // contains the low `x` bits of the second row (because nothing could be shifted into the first row)
+            let mut low_bits_per_row = ((1u64 << x) - 1) << PUZZLE_WIDTH;
+            let mut rows_counted = 1;
+            while rows_counted < PUZZLE_HEIGHT {
+                // The first iteration, we'll have a single row, and add a second row to the mask
+                // The second iteration, we'll shift our two rows up by two, to get four rows
+                // Then finally, we'll shift our four rows up by four, to get all eight rows
+                low_bits_per_row |= low_bits_per_row << (PUZZLE_WIDTH * rows_counted);
+                rows_counted *= 2;
+            }
+            mask &= !low_bits_per_row;
+        }
+        self.0 &= mask;
+
+        self
+    }
+
     pub fn inverted(self) -> Self {
         Self(!self.0 & Self::filled().0)
     }
 
-    fn mask(x: usize, y: usize) -> u64 {
+    const fn mask(x: usize, y: usize) -> u64 {
         1u64 << ((y * PUZZLE_WIDTH) + x) as u64
     }
 
-    pub fn conflicts_with(self, other: Self) -> bool {
+    pub const fn conflicts_with(self, other: Self) -> bool {
         self.0 & other.0 != 0
     }
 
-    pub fn covers_winning_mask(self, winning_mask: Self) -> bool {
+    pub const fn covers_winning_mask(self, winning_mask: Self) -> bool {
         self.0 & !winning_mask.0 != 0
     }
 
@@ -173,4 +206,19 @@ impl fmt::Debug for TaggedMask {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(&self, f)
     }
+}
+
+#[test]
+fn shift_board() {
+    let mut board = BoardMask::default();
+    board.set_covered(0, 0, true);
+    board.set_covered(2, 1, true);
+    board.set_covered(PUZZLE_WIDTH - 1, 0, true);
+    board.set_covered(PUZZLE_WIDTH - 1, PUZZLE_HEIGHT - 1, true);
+    let shifted = board.shifted(1, 1);
+
+    let mut expected_board = BoardMask::default();
+    expected_board.set_covered(1, 1, true);
+    expected_board.set_covered(3, 2, true);
+    assert_eq!(shifted.0, expected_board.0);
 }

@@ -2,6 +2,33 @@ use super::prelude::*;
 use std::cmp::{max, min};
 
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
+pub struct RotationAndFlip(u8);
+
+impl RotationAndFlip {
+    pub const NUM: usize = 4 * 2;
+
+    pub const fn new(rotation: u8, flipped: bool) -> Self {
+        RotationAndFlip((rotation % 4) | (flipped as u8) << 2)
+    }
+
+    pub const fn rotation(self) -> u8 {
+        self.0 & 0b11
+    }
+
+    pub const fn flipped(self) -> bool {
+        (self.0 & 0b100) != 0
+    }
+
+    pub const fn code(self) -> u8 {
+        self.0
+    }
+
+    pub fn iter_all() -> impl Iterator<Item = RotationAndFlip> {
+        (0..(Self::NUM as u8)).map(Self)
+    }
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct Placement {
     pub x: u8,
     pub y: u8,
@@ -11,6 +38,10 @@ pub struct Placement {
 
 impl Placement {
     pub const NUM_PLACEMENTS: usize = PUZZLE_WIDTH * PUZZLE_HEIGHT * 4 * 2;
+
+    pub fn rotation_and_flip(self) -> RotationAndFlip {
+        RotationAndFlip::new(self.rotation, self.flipped)
+    }
 
     pub fn code(self) -> Option<usize> {
         let x = self.x as usize;
