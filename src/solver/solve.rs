@@ -96,8 +96,11 @@ impl Iterator for Solver {
                 // go through the iterator `piece_placements` to find the next valid move to make in this frame
                 for (piece_idx, placement) in &mut current_frame.piece_placements {
                     // if we find a move, and can make it, then that is our next state!
-                    let mut next_state = current_frame.state;
-                    if next_state.place_piece(piece_idx, Some(placement), self.winning_mask) {
+                    if let Some(next_state) = current_frame.state.with_piece_placed(
+                        piece_idx,
+                        placement,
+                        self.winning_mask,
+                    ) {
                         break 'l next_state;
                     }
                 }

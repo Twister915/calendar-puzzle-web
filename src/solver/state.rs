@@ -90,58 +90,32 @@ impl GameState {
         self.pieces
     }
 
-    pub fn place_piece(
-        &mut self,
+    pub fn with_piece_placed(
+        &self,
         piece_idx: usize,
-        placement: Option<Placement>,
+        placement: Placement,
         winning_mask: BoardMask,
-    ) -> bool {
+    ) -> Option<Self> {
         if piece_idx >= NUM_PIECES {
-            return false;
+            return None;
         }
-
-        // no change?
-        if self.pieces[piece_idx] == placement {
-            return false;
-        }
+        debug_assert!(self.pieces[piece_idx].is_none());
 
         // are we placing a piece?
-        if let Some(new_placement) = placement {
-            // Some if piece_idx is valid and placement is on the board (valid)
-            // None otherwise (therefore do not process the update)
-            if let Some(mask_update) = mask_for_piece(piece_idx, new_placement) {
-                let last_value = &self.pieces[piece_idx];
-
-                // what is our current board mask, without this piece placed anywhere?
-                let mut own_mask = if last_value.is_none() {
-                    // we are placing a piece that has never been placed before... so we can just
-                    // check if there are conflicts with the current mask
-                    self.mask
-                } else {
-                    // we are "moving" this piece, so a mask without this piece placed at all will
-                    // be calculated to check for conflicts
-                    let mut new_pieces = self.pieces;
-                    new_pieces[piece_idx] = None;
-                    BoardMask::compute(&new_pieces)
-                };
-
-                if !mask_update.conflicts_with(own_mask)
-                    && !mask_update.covers_winning_mask(winning_mask)
-                {
-                    self.pieces[piece_idx] = Some(new_placement);
-                    own_mask.apply(mask_update);
-                    self.mask = own_mask;
-                    return true;
-                }
+        // Some if piece_idx is valid and placement is on the board (valid)
+        // None otherwise (therefore do not process the update)
+        if let Some(mask_update) = mask_for_piece(piece_idx, placement) {
+            if !mask_update.conflicts_with(self.mask)
+                && !mask_update.covers_winning_mask(winning_mask)
+            {
+                let mut out = *self;
+                out.pieces[piece_idx] = Some(placement);
+                out.mask.apply(mask_update);
+                return Some(out);
             }
-        } else if self.pieces[piece_idx].is_some() {
-            // this is also if placement == None
-            self.pieces[piece_idx] = None;
-            self.mask = BoardMask::compute(&self.pieces);
-            return true;
         }
 
-        false
+        None
     }
 
     pub fn mask(&self) -> BoardMask {
