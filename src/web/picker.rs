@@ -1,6 +1,6 @@
-use yew::prelude::*;
-use crate::solver::{Month, TargetDate, Weekday};
 use super::dropdown::*;
+use crate::solver::{Month, TargetDate, Weekday};
+use yew::prelude::*;
 
 #[derive(PartialEq, Debug, Properties)]
 pub struct PickerProps {
@@ -84,26 +84,25 @@ impl Component for Picker {
         }
     }
 
-
     fn view(&self, ctx: &Context<Self>) -> Html {
         html! {
             <div class="target-picker">
                 <Dropdown<Weekday>
                     placeholder={"Weekday"}
                     values={Self::weekday_values()}
-                    on_change={ctx.link().callback(|new_weekday| PickerMsg::PickWeekday(new_weekday))}
+                    on_change={ctx.link().callback(PickerMsg::PickWeekday)}
                     value={self.weekday}
                     disabled={false}/>
                 <Dropdown<Month>
                     placeholder={"Month"}
                     values={Self::month_values()}
-                    on_change={ctx.link().callback(|new_month| PickerMsg::PickMonth(new_month))}
+                    on_change={ctx.link().callback(PickerMsg::PickMonth)}
                     value={self.month}
                     disabled={false}/>
                 <Dropdown<i8>
                     placeholder={"Day"}
                     values={self.day_of_month_values()}
-                    on_change={ctx.link().callback(|new_day| PickerMsg::PickDay(new_day))}
+                    on_change={ctx.link().callback(PickerMsg::PickDay)}
                     value={self.day}
                     disabled={self.month.is_none()}/>
                 <div class={classes!(
@@ -118,7 +117,14 @@ impl Component for Picker {
 
 impl Picker {
     fn target_date(&self) -> Option<TargetDate> {
-        self.month.zip(self.weekday).zip(self.day).map(|((month, day_of_week), day_of_month)| TargetDate{month, day_of_week, day_of_month})
+        self.month
+            .zip(self.weekday)
+            .zip(self.day)
+            .map(|((month, day_of_week), day_of_month)| TargetDate {
+                month,
+                day_of_week,
+                day_of_month,
+            })
     }
 
     fn month_values() -> Vec<Month> {
@@ -158,6 +164,6 @@ impl Picker {
     }
 
     fn emit_selection(&self, ctx: &Context<Self>) {
-        ctx.props().on_picked.emit(self.target_date())
+        ctx.props().on_picked.emit(self.target_date());
     }
 }

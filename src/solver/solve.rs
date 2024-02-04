@@ -1,20 +1,20 @@
 use super::prelude::*;
 
+use crate::return_matching;
 use std::fmt;
 use std::time::{Duration, Instant};
-use crate::return_matching;
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub struct Solution {
     pub mask: TaggedMask,
     pub game: GameState,
     pub steps: usize,
-    #[cfg(feature="timed")]
+    #[cfg(feature = "timed")]
     pub duration: Duration,
 }
 
-pub fn solve(target: TargetDate) -> impl Iterator<Item=SolverMsg> {
-    target.winning_mask().into_iter().flat_map(move |winning_mask| Solver::create(winning_mask))
+pub fn solve(target: TargetDate) -> impl Iterator<Item = SolverMsg> {
+    target.winning_mask().into_iter().flat_map(Solver::create)
 }
 
 struct Solver {
@@ -29,7 +29,7 @@ impl Solver {
             winning_mask,
             stats: SolverStats {
                 steps: 0,
-                #[cfg(feature="timed")]
+                #[cfg(feature = "timed")]
                 start_at: Instant::now(),
             },
             // this capacity of NUM_PIECES is because we actually can only have one frame per placed piece.
@@ -43,18 +43,17 @@ impl Solver {
 pub enum SolverMsg {
     Unsolved(GameState, TaggedMask),
     Solved(Solution),
-    Impossible
+    Impossible,
 }
 
 impl fmt::Display for SolverMsg {
-
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             SolverMsg::Solved(solution) => {
                 write!(f, "SOLVED in {} steps\n{}\n", solution.steps, solution.mask)
-            },
+            }
             SolverMsg::Unsolved(_, tagged_mask) => write!(f, "UNSOLVED\n{}\n", tagged_mask),
-            SolverMsg::Impossible => write!(f, "IMPOSSIBLE!!")
+            SolverMsg::Impossible => write!(f, "IMPOSSIBLE!!"),
         }
     }
 }
@@ -95,10 +94,13 @@ impl Iterator for Solver {
                 let current_frame = &mut frames[num_frames - 1];
 
                 // go through the iterator `piece_placements` to find the next valid move to make in this frame
-                for (piece_idx, placement) in &mut current_frame.piece_placements {
+                while let Some((piece_idx, placement)) = current_frame.next_piece_placement() {
                     // if we find a move, and can make it, then that is our next state!
-                    let mut next_state = current_frame.state;
-                    if next_state.place_piece(piece_idx, Some(placement), self.winning_mask) {
+                    if let Some(next_state) = current_frame.state.with_piece_placed(
+                        piece_idx,
+                        placement,
+                        self.winning_mask,
+                    ) {
                         break 'l next_state;
                     }
                 }
@@ -123,7 +125,7 @@ impl Iterator for Solver {
                 game: next_state,
                 mask: next_state.tagged_mask(self.winning_mask),
                 steps: self.stats.steps,
-                #[cfg(feature="timed")]
+                #[cfg(feature = "timed")]
                 duration: Instant::now() - self.stats.start_at,
             })
         } else {
@@ -137,25 +139,54 @@ impl Iterator for Solver {
 
 struct SolveFrame {
     state: GameState,
-    piece_placements: Box<dyn Iterator<Item=(usize, Placement)>>
+    cover_x: u8,
+    cover_y: u8,
+    // Bitfield of piece indexes left to try, includes the index currently used by piece_positions
+    pieces_to_try: u16,
+    piece_positions: PiecePositions,
 }
 
 impl SolveFrame {
     fn create(state: GameState, winning_mask: BoardMask) -> Self {
-        let piece_placements = Box::new(
-            state.open_positions(winning_mask)
-                .next()
-                .into_iter()
-                .flat_map(move |(x, y)|
-                    state.available_piece_idxes()
-                        .flat_map(move |piece_idx| Placement::iter_covering_coordinates(x, y, piece_idx)
-                            .map(move |placement| (piece_idx, placement)))));
-        Self { state, piece_placements }
+        let (cover_x, cover_y) = state
+            .mask()
+            .next_to_cover(winning_mask)
+            .expect("solve frame for a solved board");
+        let pieces_to_try: u16 = state
+            .available_piece_idxes()
+            .fold(0, |acc, piece_idx| acc | (1 << piece_idx));
+        let piece = piece(pieces_to_try.trailing_zeros() as usize)
+            .expect("solve frame with no pieces left");
+        let piece_positions = PiecePositions::new(piece, cover_x, cover_y);
+        Self {
+            state,
+            cover_x,
+            cover_y,
+            pieces_to_try,
+            piece_positions,
+        }
+    }
+
+    fn next_piece_placement(&mut self) -> Option<(usize, Placement)> {
+        loop {
+            if let Some(placement) = self
+                .piece_positions
+                .next_covering(self.cover_x, self.cover_y)
+            {
+                let piece_idx = self.pieces_to_try.trailing_zeros() as usize;
+                return Some((piece_idx, placement));
+            }
+            // Unset the bit for this piece, and try the next one
+            self.pieces_to_try &= self.pieces_to_try - 1;
+            // Will return none if there's no piece left to try
+            let next_piece = piece(self.pieces_to_try.trailing_zeros() as usize)?;
+            self.piece_positions = PiecePositions::new(next_piece, self.cover_x, self.cover_y);
+        }
     }
 }
 
 struct SolverStats {
     steps: usize,
-    #[cfg(feature="timed")]
+    #[cfg(feature = "timed")]
     start_at: Instant,
 }

@@ -48,6 +48,7 @@ pub enum BoardLabel {
     Unlabeled,
 }
 
+#[rustfmt::skip]
 pub const BOARD_LABELS: [[BoardLabel; PUZZLE_WIDTH]; PUZZLE_HEIGHT] = {
     use {Month as M, Weekday as WD, BoardLabel::{MonthLabel as ML, DayLabel as DL, DayOfWeekLabel as WL, Unlabeled}};
     [

@@ -20,7 +20,21 @@ features = [
     "HtmlInputElement"
 ]
 
+[dev-dependencies]
+criterion = "0.5.1"
+
+[lib]
+bench = false
+
+[[bench]]
+name = "bench"
+harness = false
+
 [profile.release]
 lto = 'fat'
 codegen-units = 1
 incremental = false
+
+[profile.bench]
+inherits = "release"
+debug = "line-tables-only"
