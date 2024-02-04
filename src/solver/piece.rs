@@ -135,11 +135,7 @@ impl Piece {
         }
     }
 
-    pub fn relative_offset_iter(
-        &self,
-        rotation: u8,
-        flipped: bool,
-    ) -> impl Iterator<Item = (u8, u8)> {
+    pub fn relative_offset_iter(&self, rotation: u8, flipped: bool) -> BoardMaskIter {
         let placement = Placement {
             x: 0,
             y: 0,
@@ -148,6 +144,72 @@ impl Piece {
         };
         let base_mask = self.masks[placement.code().unwrap()].unwrap();
         base_mask.iter_covered()
+    }
+}
+
+pub struct PiecePositions {
+    piece: &'static Piece,
+    remaining_relative_positions: BoardMaskIter,
+    flipped: bool,
+    rotation: u8,
+}
+
+impl PiecePositions {
+    pub fn new(piece: &'static Piece) -> Self {
+        let rotation = 0;
+        let flipped = false;
+        Self {
+            piece,
+            remaining_relative_positions: piece.relative_offset_iter(rotation, flipped),
+            flipped,
+            rotation,
+        }
+    }
+
+    pub fn next_covering(&mut self, x: u8, y: u8) -> Option<Placement> {
+        debug_assert!(usize::from(x) < PUZZLE_WIDTH);
+        debug_assert!(usize::from(y) < PUZZLE_HEIGHT);
+
+        if self.rotation >= 4 {
+            return None;
+        }
+
+        loop {
+            let (w, h) = self.piece.size(self.rotation);
+            while let Some((dx, dy)) = self.remaining_relative_positions.next() {
+                // For each point in the piece, position it so that point is at (x, y)
+                // e.g if the piece has (0, 0), we place it at (x, y) to place that point at (x, y)
+                // if the piece has (1, 1), we place it at (x - 1, y - 1)
+                let Some(x) = x
+                    .checked_sub(dx)
+                    .filter(|&x| usize::from(x) + w <= PUZZLE_WIDTH)
+                else {
+                    continue;
+                };
+                let Some(y) = y
+                    .checked_sub(dy)
+                    .filter(|&y| usize::from(y) + h <= PUZZLE_HEIGHT)
+                else {
+                    continue;
+                };
+                return Some(Placement {
+                    x,
+                    y,
+                    flipped: self.flipped,
+                    rotation: self.rotation,
+                });
+            }
+            self.flipped = !self.flipped;
+            if !self.flipped {
+                // just un-flipped, need to rotate
+                self.rotation += 1;
+                if self.rotation >= 4 {
+                    return None;
+                }
+            }
+            self.remaining_relative_positions =
+                self.piece.relative_offset_iter(self.rotation, self.flipped);
+        }
     }
 }
 

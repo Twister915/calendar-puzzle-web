@@ -94,7 +94,7 @@ impl Iterator for Solver {
                 let current_frame = &mut frames[num_frames - 1];
 
                 // go through the iterator `piece_placements` to find the next valid move to make in this frame
-                for (piece_idx, placement) in &mut current_frame.piece_placements {
+                while let Some((piece_idx, placement)) = current_frame.next_piece_placement() {
                     // if we find a move, and can make it, then that is our next state!
                     if let Some(next_state) = current_frame.state.with_piece_placed(
                         piece_idx,
@@ -139,26 +139,47 @@ impl Iterator for Solver {
 
 struct SolveFrame {
     state: GameState,
-    piece_placements: Box<dyn Iterator<Item = (usize, Placement)>>,
+    cover_x: u8,
+    cover_y: u8,
+    // Bitfield of piece indexes left to try, includes the index currently used by piece_positions
+    pieces_to_try: u16,
+    piece_positions: PiecePositions,
 }
 
 impl SolveFrame {
     fn create(state: GameState, winning_mask: BoardMask) -> Self {
-        let piece_placements = Box::new(
-            state
-                .mask()
-                .next_to_cover(winning_mask)
-                .into_iter()
-                .flat_map(move |(x, y)| {
-                    state.available_piece_idxes().flat_map(move |piece_idx| {
-                        Placement::iter_covering_coordinates(x, y, piece_idx)
-                            .map(move |placement| (piece_idx, placement))
-                    })
-                }),
-        );
+        let (cover_x, cover_y) = state
+            .mask()
+            .next_to_cover(winning_mask)
+            .expect("solve frame for a solved board");
+        let pieces_to_try: u16 = state
+            .available_piece_idxes()
+            .fold(0, |acc, piece_idx| acc | (1 << piece_idx));
+        let piece = piece(pieces_to_try.trailing_zeros() as usize)
+            .expect("solve frame with no pieces left");
+        let piece_positions = PiecePositions::new(piece);
         Self {
             state,
-            piece_placements,
+            cover_x,
+            cover_y,
+            pieces_to_try,
+            piece_positions,
+        }
+    }
+
+    fn next_piece_placement(&mut self) -> Option<(usize, Placement)> {
+        loop {
+            if let Some(placement) = self
+                .piece_positions
+                .next_covering(self.cover_x, self.cover_y)
+            {
+                let piece_idx = self.pieces_to_try.trailing_zeros() as usize;
+                return Some((piece_idx, placement));
+            }
+            // Unset the bit for this piece, and try the next one
+            self.pieces_to_try &= self.pieces_to_try - 1;
+            self.piece_positions =
+                PiecePositions::new(piece(self.pieces_to_try.trailing_zeros() as usize)?);
         }
     }
 }

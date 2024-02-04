@@ -62,18 +62,27 @@ impl BoardMask {
         }
     }
 
-    pub fn iter_covered(mut self) -> impl Iterator<Item = (u8, u8)> {
-        std::iter::from_fn(move || {
-            let pos = self.0.trailing_zeros() as usize;
-            if pos == 64 {
-                None
-            } else {
-                // Unset the lowest bit
-                self.0 &= self.0 - 1;
-                let (x, y) = (pos % PUZZLE_WIDTH, pos / PUZZLE_WIDTH);
-                Some((x.try_into().unwrap(), y.try_into().unwrap()))
-            }
-        })
+    pub fn iter_covered(self) -> BoardMaskIter {
+        BoardMaskIter(self.0)
+    }
+}
+
+#[derive(Default, Clone)]
+pub struct BoardMaskIter(u64);
+
+impl Iterator for BoardMaskIter {
+    type Item = (u8, u8);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let pos = self.0.trailing_zeros() as usize;
+        if pos == 64 {
+            None
+        } else {
+            // Unset the lowest bit
+            self.0 &= self.0 - 1;
+            let (x, y) = (pos % PUZZLE_WIDTH, pos / PUZZLE_WIDTH);
+            Some((x.try_into().unwrap(), y.try_into().unwrap()))
+        }
     }
 }
 
