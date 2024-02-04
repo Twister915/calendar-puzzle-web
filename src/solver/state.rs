@@ -124,19 +124,19 @@ impl GameState {
 
     pub fn tagged_mask(&self, winning_mask: BoardMask) -> TaggedMask {
         let mut out = TaggedMask::default();
-        for (x, y) in iter_coordinates() {
-            if !winning_mask.is_covered(x, y) {
-                out.set(x, y, CellTag::Winner);
-            }
+        for (x, y) in winning_mask.inverted().iter_covered() {
+            out.set(usize::from(x), usize::from(y), CellTag::Winner);
         }
         for (piece_idx, &placement) in self.pieces.iter().enumerate() {
             if let Some(placement) = placement {
-                if let Some(mask) = mask_for_piece(piece_idx, placement) {
-                    for (x, y) in iter_coordinates() {
-                        if mask.is_covered(x, y) {
-                            out.set(x, y, CellTag::Covered(piece_idx as u8));
-                        }
-                    }
+                let mask = mask_for_piece(piece_idx, placement)
+                    .expect("game state should have a valid piece placement");
+                for (x, y) in mask.iter_covered() {
+                    out.set(
+                        usize::from(x),
+                        usize::from(y),
+                        CellTag::Covered(piece_idx as u8),
+                    );
                 }
             }
         }

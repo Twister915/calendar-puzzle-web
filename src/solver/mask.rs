@@ -34,6 +34,10 @@ impl BoardMask {
         }
     }
 
+    pub fn inverted(self) -> Self {
+        Self(!self.0 & Self::filled().0)
+    }
+
     fn mask(x: usize, y: usize) -> u64 {
         1u64 << ((y * PUZZLE_WIDTH) + x) as u64
     }
