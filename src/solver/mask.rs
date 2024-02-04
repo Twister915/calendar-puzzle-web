@@ -41,39 +41,54 @@ impl BoardMask {
     /// Return a mask which is shifted by the given amount
     ///
     /// Any values which are shifted off the board are lost.
-    pub const fn shifted(mut self, x: usize, y: usize) -> Self {
-        const fn mask_for_x_shift(x: usize) -> u64 {
+    pub const fn shifted(mut self, x: isize, y: isize) -> Self {
+        const fn mask_for_x_shift(x: isize) -> u64 {
             let mut mask = BoardMask::filled().0;
             let mut row = 0;
+            let x_magnitude = x.unsigned_abs();
+            let mut single_row_bits = (1 << x_magnitude) - 1;
+            if x < 0 {
+                // Shift to be on the right side of the board
+                single_row_bits <<= PUZZLE_WIDTH - x_magnitude;
+            }
             while row < PUZZLE_HEIGHT {
-                // Clear the bits that would be shifted from the left side of each row
+                // Clear the bits that would be shifted from the side of each row
                 // (they should shift in zeros, but they might have shifted in values from the previous row)
 
                 // This makes a bitmask with bits 0..x set to 1, then shifts it up to the current row
-                let shifted_from_prev_row = ((1 << x) - 1) << (row * PUZZLE_WIDTH);
+                let shifted_from_prev_row = single_row_bits << (row * PUZZLE_WIDTH);
                 // We then clear those bits from the mask, so they will be zeroed
                 mask &= !shifted_from_prev_row;
                 row += 1;
             }
             mask
         }
-        // Pre-computed mask per x shift
-        const LOW_COLUMN_MASKS: [u64; PUZZLE_WIDTH] = {
-            let mut out = [0; PUZZLE_WIDTH];
+        // Pre-computed mask per x shift, from -PUZZLE_WIDTH + 1 to PUZZLE_WIDTH
+        // The mask for a shift of x is at index x + PUZZLE_WIDTH - 1
+        const LOW_COLUMN_MASKS: [u64; PUZZLE_WIDTH * 2 - 1] = {
+            let mut out = [0; PUZZLE_WIDTH * 2 - 1];
             let mut x = 0;
-            while x < PUZZLE_WIDTH {
-                out[x] = mask_for_x_shift(x);
+            while x < out.len() {
+                out[x] = mask_for_x_shift(x as isize - (PUZZLE_WIDTH - 1) as isize);
                 x += 1;
             }
             out
         };
 
-        if y >= PUZZLE_HEIGHT || x >= PUZZLE_WIDTH {
+        if x <= -(PUZZLE_WIDTH as isize)
+            || x >= PUZZLE_WIDTH as isize
+            || y <= -(PUZZLE_HEIGHT as isize)
+            || x >= PUZZLE_HEIGHT as isize
+        {
             return Self::new();
         }
-        let shift = (y * PUZZLE_WIDTH) + x;
-        self.0 <<= shift;
-        self.0 &= LOW_COLUMN_MASKS[x];
+        let shift = (y * PUZZLE_WIDTH as isize) + x;
+        if shift > 0 {
+            self.0 <<= shift;
+        } else {
+            self.0 >>= -shift;
+        }
+        self.0 &= LOW_COLUMN_MASKS[(x + PUZZLE_WIDTH as isize - 1) as usize];
         self
     }
 

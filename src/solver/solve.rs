@@ -157,7 +157,7 @@ impl SolveFrame {
             .fold(0, |acc, piece_idx| acc | (1 << piece_idx));
         let piece = piece(pieces_to_try.trailing_zeros() as usize)
             .expect("solve frame with no pieces left");
-        let piece_positions = PiecePositions::new(piece);
+        let piece_positions = PiecePositions::new(piece, cover_x, cover_y);
         Self {
             state,
             cover_x,
@@ -178,8 +178,9 @@ impl SolveFrame {
             }
             // Unset the bit for this piece, and try the next one
             self.pieces_to_try &= self.pieces_to_try - 1;
-            self.piece_positions =
-                PiecePositions::new(piece(self.pieces_to_try.trailing_zeros() as usize)?);
+            // Will return none if there's no piece left to try
+            let next_piece = piece(self.pieces_to_try.trailing_zeros() as usize)?;
+            self.piece_positions = PiecePositions::new(next_piece, self.cover_x, self.cover_y);
         }
     }
 }

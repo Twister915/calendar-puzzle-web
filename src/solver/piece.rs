@@ -128,7 +128,7 @@ impl Piece {
             return None;
         }
         let mask = self.masks[usize::from(rotation_and_flip.code())];
-        Some(mask.shifted(placement.x as usize, placement.y as usize))
+        Some(mask.shifted(placement.x as isize, placement.y as isize))
     }
 
     pub fn size(&self, rotation: u8) -> (usize, usize) {
@@ -155,12 +155,42 @@ pub struct PiecePositions {
 }
 
 impl PiecePositions {
-    pub fn new(piece: &'static Piece) -> Self {
+    fn board_mask_for_rotation_and_flip(
+        piece: &Piece,
+        rotation_and_flip: RotationAndFlip,
+        cover_x: u8,
+        cover_y: u8,
+    ) -> BoardMask {
+        let mut mask = piece.masks[usize::from(rotation_and_flip.code())];
+        let (w, h) = piece.size(rotation_and_flip.rotation());
+        // This is kinda confusing, and backwards feeling.
+        // Shift up and left to unset points on the piece that cannot be placed at cover_x, cover_y, because the piece
+        // would stick off the end of the board
+        // e.g. if cover_x is PUZZLE_WIDTH - 1, the only points that we can choose for this piece to cover that point
+        // are on the right side of the piece
+        let shift_x = (cover_x as usize + w).saturating_sub(PUZZLE_WIDTH) as isize;
+        let shift_y = (cover_y as usize + h).saturating_sub(PUZZLE_HEIGHT) as isize;
+        mask = mask.shifted(-shift_x, -shift_y).shifted(shift_x, shift_y);
+
+        // Then shift to unset points that couldn't cover the desired point
+        // because they would stick off the left or top of the board
+        let shift_x = (PUZZLE_WIDTH - cover_x as usize - 1) as isize;
+        let shift_y = (PUZZLE_HEIGHT - cover_y as usize - 1) as isize;
+        mask = mask.shifted(shift_x, shift_y).shifted(-shift_x, -shift_y);
+        mask
+    }
+    pub fn new(piece: &'static Piece, cover_x: u8, cover_y: u8) -> Self {
         let rotation = 0;
         let flipped = false;
         Self {
             piece,
-            remaining_relative_positions: piece.relative_offset_iter(rotation, flipped),
+            remaining_relative_positions: Self::board_mask_for_rotation_and_flip(
+                piece,
+                RotationAndFlip::new(rotation, flipped),
+                cover_x,
+                cover_y,
+            )
+            .iter_covered(),
             flipped,
             rotation,
         }
@@ -175,26 +205,10 @@ impl PiecePositions {
         }
 
         loop {
-            let (w, h) = self.piece.size(self.rotation);
-            while let Some((dx, dy)) = self.remaining_relative_positions.next() {
-                // For each point in the piece, position it so that point is at (x, y)
-                // e.g if the piece has (0, 0), we place it at (x, y) to place that point at (x, y)
-                // if the piece has (1, 1), we place it at (x - 1, y - 1)
-                let Some(x) = x
-                    .checked_sub(dx)
-                    .filter(|&x| usize::from(x) + w <= PUZZLE_WIDTH)
-                else {
-                    continue;
-                };
-                let Some(y) = y
-                    .checked_sub(dy)
-                    .filter(|&y| usize::from(y) + h <= PUZZLE_HEIGHT)
-                else {
-                    continue;
-                };
+            if let Some((dx, dy)) = self.remaining_relative_positions.next() {
                 return Some(Placement {
-                    x,
-                    y,
+                    x: x - dx,
+                    y: y - dy,
                     flipped: self.flipped,
                     rotation: self.rotation,
                 });
@@ -207,8 +221,13 @@ impl PiecePositions {
                     return None;
                 }
             }
-            self.remaining_relative_positions =
-                self.piece.relative_offset_iter(self.rotation, self.flipped);
+            self.remaining_relative_positions = Self::board_mask_for_rotation_and_flip(
+                self.piece,
+                RotationAndFlip::new(self.rotation, self.flipped),
+                x,
+                y,
+            )
+            .iter_covered();
         }
     }
 }
